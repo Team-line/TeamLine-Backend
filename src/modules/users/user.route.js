@@ -28,15 +28,15 @@ userRouter.patch("/reset-password/:resetToken", resetPasswordController);
 
 userRouter.patch(
   "/updateMyPassword",
-  validateRequest(updateUserPasswordSchma),
   protect,
+  validateRequest(updateUserPasswordSchma),
   updateMyPassword,
 );
 
 userRouter.patch(
   "/updateMyData",
-  validateRequest(updateUserDataSchema),
   protect,
+  validateRequest(updateUserDataSchema),
   updateUserDateController,
 );
 export default userRouter;
