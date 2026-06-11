@@ -5,10 +5,18 @@ import {
   updateWorkSpace,
   deleteWorkSpace,
   inviteMemberToWOrkSpaceRepo,
+  createInvitationRepo,
+  updateInvitationStatusRepo,
+  findPendingInvitationByIdRepo,
 } from "./workspace.reposotry.js";
 
 import { getUserViaEmail } from "../users/user.reposotry.js";
+import { formatWorkspace } from "../../shared/utils/workSpaceResponce.js";
 import appErrors from "../../shared/errors/appErrors.js";
+import { sendEmail } from "../../shared/utils/email.service.js";
+import { workspaceInviteTemplate } from "../../shared/utils/workspaceInvite.template.js";
+import invitationModel from "../invitation/invitation.modle.js";
+
 export const createWorkSpaceService = async function (
   ownerID,
   { name, description },
@@ -18,15 +26,13 @@ export const createWorkSpaceService = async function (
     description,
     owner: ownerID,
   });
-  return workspace;
+  return formatWorkspace(workspace);
 };
-
-// ToDO its for the role admin
 
 export const getAllWorkSpacesToUser = async function (userId) {
   const workspaces = await getAllWorkSpacesRepo(userId);
 
-  return workspaces;
+  return workspaces.map((w) => formatWorkspace(w));
 };
 
 export const getWorkSpaceByIdService = async function (id, userId) {
@@ -42,7 +48,7 @@ export const getWorkSpaceByIdService = async function (id, userId) {
       401,
     );
   }
-  return workspace;
+  return formatWorkspace(workspace);
 };
 
 export const updateWOrkSpaceService = async function (id, userId, data) {
@@ -57,7 +63,7 @@ export const updateWOrkSpaceService = async function (id, userId, data) {
       401,
     );
   }
-  return workspace;
+  return formatWorkspace(workspace);
 };
 
 export const deleteWorkSpaceService = async function (id, userId) {
@@ -72,7 +78,7 @@ export const deleteWorkSpaceService = async function (id, userId) {
       401,
     );
   }
-  return workspace;
+  return formatWorkspace(workspace);
 };
 
 export const inviteMemberTOWorkSpace = async function (
@@ -96,16 +102,58 @@ export const inviteMemberTOWorkSpace = async function (
   }
 
   if (workspace.isOwner(user._id) || workspace.isMember(user._id)) {
-    throw new appErrors("User is already part of this workspace", 409); // 💡 409 Conflict
+    throw new appErrors("User is already part of this workspace", 409);
+  }
+
+  const existingInvite = await invitationModel.findOne({
+    workspace: workspaceId,
+    invitedUser: user._id,
+    status: "pending",
+  });
+  if (existingInvite) {
+    throw new appErrors("An invitation is already pending for this user", 400);
   }
 
   if (workspace.members.length >= 50) {
     throw new appErrors(
       "Workspace has reached the maximum number of members",
       400,
-    ); // 💡 400 Bad Request
+    );
   }
-  const invite = await inviteMemberToWOrkSpaceRepo(workspaceId, user.id);
 
-  return invite;
+  const invetation = await createInvitationRepo(workspaceId, user._id, userId);
+  const inviteLink = `http://localhost:3000/api/v1/workspaces/invitations/${invetation._id}`;
+
+  try {
+    const emailSubject = `Invitation to join "${workspace.name}" Workspace`;
+    const emailBody = workspaceInviteTemplate(workspace.name, inviteLink);
+    await sendEmail(user.email, emailBody, emailSubject);
+  } catch (error) {
+    console.error("Failed to send invitation email:", error);
+    throw new appErrors(
+      "Failed to send invitation email. Please try again later.",
+      500,
+    );
+  }
+  return { message: "Invitation sent successfully" };
+};
+
+export const acceptInvitationService = async function (inviteId, userId) {
+  const invitation = await findPendingInvitationByIdRepo(inviteId);
+  if (!invitation) {
+    throw new appErrors("Invitation not found or already processed", 404);
+  }
+  if (invitation.invitedUser.toString() !== userId) {
+    throw new appErrors(
+      "You are not authorized to accept this invitation",
+      403,
+    );
+  }
+  await updateInvitationStatusRepo(inviteId, "accepted");
+
+  const workspace = await inviteMemberToWOrkSpaceRepo(
+    invitation.workspace,
+    userId,
+  );
+  return formatWorkspace(workspace);
 };

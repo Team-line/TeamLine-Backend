@@ -5,6 +5,7 @@ import {
   updateWOrkSpaceService,
   deleteWorkSpaceService,
   inviteMemberTOWorkSpace,
+  acceptInvitationService,
 } from "./workspace.service.js";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
 export const createWorkSpaceController = asyncWrapper(
@@ -69,6 +70,17 @@ export const inviteMemberCOntroller = asyncWrapper(
     const { email } = req.body;
     const workspaceId = req.params.id;
     const data = await inviteMemberTOWorkSpace(workspaceId, email, req.user.id);
+    res.status(200).json({
+      status: "success",
+      data,
+    });
+  },
+);
+
+export const acceptInvitationController = asyncWrapper(
+  async function (req, res, next) {
+    const { inviteId } = req.params;
+    const data = await acceptInvitationService(inviteId, req.user.id);
     res.status(200).json({
       status: "success",
       data,

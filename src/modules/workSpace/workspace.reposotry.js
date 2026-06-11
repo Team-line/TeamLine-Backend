@@ -1,5 +1,5 @@
 import { workspaceModel } from "./workspace.modle.js";
-
+import invitationModel from "../invitation/invitation.modle.js";
 export const createWorkSpace = async function (data) {
   return workspaceModel.create(data);
 };
@@ -23,6 +23,32 @@ export const deleteWorkSpace = async function (id) {
   return workspaceModel.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, deletedAt: new Date() },
+    { returnDocument: "after" },
+  );
+};
+
+// ********************* invetation code *****************8
+
+export const createInvitationRepo = async function (
+  workspaceId,
+  invitedUserId,
+  ownerId,
+) {
+  return invitationModel.create({
+    workspace: workspaceId,
+    invitedBy: ownerId,
+    invitedUser: invitedUserId,
+  });
+};
+
+export const findPendingInvitationByIdRepo = async function (inviteId) {
+  return invitationModel.findOne({ _id: inviteId, status: "pending" });
+};
+
+export const updateInvitationStatusRepo = async function (inviteId, status) {
+  return invitationModel.findByIdAndUpdate(
+    inviteId,
+    { status },
     { returnDocument: "after" },
   );
 };

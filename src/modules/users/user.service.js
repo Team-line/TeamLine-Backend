@@ -31,6 +31,7 @@ export const forgotPassword = async function (email, resetBaseUrl) {
   //3- Send the reset token to the user's email
 
   const resetUrl = `${resetBaseUrl}/api/v1/users/reset-password/${resetToken}`;
+  const subject = "Password Reset Request";
   const html = resetPasswordTemplate(
     user.name,
     resetUrl,
@@ -38,7 +39,7 @@ export const forgotPassword = async function (email, resetBaseUrl) {
   );
 
   try {
-    await sendEmail(user.email, html);
+    await sendEmail(user.email, html, subject);
   } catch (error) {
     user.passwordResetToken = undefined;
     user.passwordResetExpires = undefined;

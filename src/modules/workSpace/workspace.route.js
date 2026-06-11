@@ -6,6 +6,7 @@ import {
   updateWorkSpaceController,
   deleteWorkSpaceController,
   inviteMemberCOntroller,
+  acceptInvitationController,
 } from "./workspace.controller.js";
 import { protect } from "../../shared/middlewares/protect.middleWare.js";
 import { validateRequest } from "../../shared/middlewares/validation.middleware.js";
@@ -36,10 +37,17 @@ workSpaceRouter.patch(
 
 workSpaceRouter.delete("/:id", protect, deleteWorkSpaceController);
 
+workSpaceRouter.get(
+  "/invitations/:inviteId",
+  protect,
+  acceptInvitationController,
+);
+
 workSpaceRouter.post(
-  "/:id/invite",
+  "/:id/invitations",
   protect,
   validateRequest(inviteMemberSchema),
   inviteMemberCOntroller,
 );
+
 export default workSpaceRouter;
