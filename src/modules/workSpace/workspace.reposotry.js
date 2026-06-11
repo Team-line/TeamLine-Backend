@@ -14,7 +14,7 @@ export const getWorkSpaceById = async function (id) {
 
 export const updateWorkSpace = async function (id, data) {
   return workspaceModel.findOneAndUpdate({ _id: id, isDeleted: false }, data, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
 };
@@ -23,6 +23,19 @@ export const deleteWorkSpace = async function (id) {
   return workspaceModel.findOneAndUpdate(
     { _id: id, isDeleted: false },
     { isDeleted: true, deletedAt: new Date() },
-    { new: true },
+    { returnDocument: "after" },
+  );
+};
+
+export const inviteMemberToWOrkSpaceRepo = async function (
+  workspaceId,
+  userId,
+) {
+  return workspaceModel.findOneAndUpdate(
+    { _id: workspaceId, isDeleted: false, "members.user": { $ne: userId } }, //! "members.user": { $ne: userId } // to prevent adding the same user multiple times
+    {
+      $push: { members: { user: userId, role: "member" } },
+    },
+    { returnDocument: "after", runValidators: true },
   );
 };

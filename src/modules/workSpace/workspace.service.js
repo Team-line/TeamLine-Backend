@@ -4,8 +4,10 @@ import {
   getWorkSpaceById,
   updateWorkSpace,
   deleteWorkSpace,
+  inviteMemberToWOrkSpaceRepo,
 } from "./workspace.reposotry.js";
 
+import { getUserViaEmail } from "../users/user.reposotry.js";
 import appErrors from "../../shared/errors/appErrors.js";
 export const createWorkSpaceService = async function (
   ownerID,
@@ -71,4 +73,39 @@ export const deleteWorkSpaceService = async function (id, userId) {
     );
   }
   return workspace;
+};
+
+export const inviteMemberTOWorkSpace = async function (
+  workspaceId,
+  email,
+  userId,
+) {
+  const user = await getUserViaEmail(email);
+
+  if (!user) {
+    throw new appErrors("User not found", 404);
+  }
+  const workspace = await getWorkSpaceById(workspaceId);
+  if (!workspace) {
+    throw new appErrors("workspace not found", 404);
+  }
+  const hasAccess = workspace.isOwner(userId);
+
+  if (!hasAccess) {
+    throw new appErrors("only the owner can invite ", 403);
+  }
+
+  if (workspace.isOwner(user._id) || workspace.isMember(user._id)) {
+    throw new appErrors("User is already part of this workspace", 409); // 💡 409 Conflict
+  }
+
+  if (workspace.members.length >= 50) {
+    throw new appErrors(
+      "Workspace has reached the maximum number of members",
+      400,
+    ); // 💡 400 Bad Request
+  }
+  const invite = await inviteMemberToWOrkSpaceRepo(workspaceId, user.id);
+
+  return invite;
 };
