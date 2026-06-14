@@ -7,6 +7,7 @@ import ratelimit from "express-rate-limit";
 import authRouter from "./modules/auth/auth.routes.js";
 import userRouter from "./modules/users/user.route.js";
 import workSpaceRouter from "./modules/workSpace/workspace.route.js";
+import boardRouter from "./modules/Board/board.route.js";
 
 import appErrors from "./shared/errors/appErrors.js";
 
@@ -54,7 +55,8 @@ const authLimiter = ratelimit({
 app.use("/api/v1/auth", authLimiter, authRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/workspaces", workSpaceRouter);
-
+app.use("/api/v1/workspaces/:workspaceId/boards", boardRouter);
+app.use("/api/v1/boards", boardRouter);
 app.use((req, res, next) => {
   next(new appErrors(`Can't find ${req.originalUrl} on this server!`, 404));
 });

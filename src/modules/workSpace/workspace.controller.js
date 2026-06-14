@@ -6,6 +6,7 @@ import {
   deleteWorkSpaceService,
   inviteMemberTOWorkSpace,
   acceptInvitationService,
+  findMemberAndUpdateRoleService,
 } from "./workspace.service.js";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
 export const createWorkSpaceController = asyncWrapper(

@@ -8,6 +8,7 @@ import {
   createInvitationRepo,
   updateInvitationStatusRepo,
   findPendingInvitationByIdRepo,
+  findMemberAndUpdateRoleRepo,
 } from "./workspace.reposotry.js";
 
 import { getUserViaEmail } from "../users/user.reposotry.js";
@@ -156,4 +157,37 @@ export const acceptInvitationService = async function (inviteId, userId) {
     userId,
   );
   return formatWorkspace(workspace);
+};
+
+export const findMemberAndUpdateRoleService = async function (
+  workspcaeId,
+  userID,
+  ownerid,
+  role,
+) {
+  const workspace = await getWorkSpaceById(workspcaeId);
+
+  if (!workspace) {
+    throw new appErrors("Workspace not found", 404);
+  }
+  const user = workspace.members.find(
+    (m) => m.user.toString() === userID.toString(),
+  );
+  if (!user) {
+    throw new appErrors("User not found", 404);
+  }
+  if (!workspace.isOwner(ownerid)) {
+    throw new appErrors("only the owner can update the role ", 403);
+  }
+  const ownerCount = workspace.members.filter((m) => m.role === "owner").length;
+  if (user.role === "owner" && ownerCount === 1 && role !== "owner") {
+    throw new appErrors("A workspace must have at least one owner", 400);
+  }
+
+  const updatedWorkspace = await findMemberAndUpdateRoleRepo(
+    workspaceId,
+    userID,
+    role,
+  );
+  return formatWorkspace(updatedWorkspace);
 };

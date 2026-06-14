@@ -65,3 +65,26 @@ export const inviteMemberToWOrkSpaceRepo = async function (
     { returnDocument: "after", runValidators: true },
   );
 };
+
+export const findMemberAndUpdateRoleRepo = async function (
+  workspaceID,
+  userId,
+  role,
+) {
+  return workspaceModel.findOneAndUpdate(
+    {
+      _id: workspaceID,
+      "members.user": userId,
+      isDeleted: false,
+    },
+    {
+      $set: {
+        "members.$.role": role,
+      },
+    },
+    {
+      runValidators: true,
+      returnDocument: "after",
+    },
+  );
+};
