@@ -2,6 +2,8 @@ import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
 import { userModel } from "../users/user.model.js";
 import appError from "../../shared/errors/appErrors.js";
 import jwt from "jsonwebtoken";
+import { userResponse } from "../../shared/utils/userResponse.js";
+
 import { JWT_EXPIRE, JWT_SECRET } from "../../config/env.js";
 import { generateToekn } from "../../shared/utils/genarateToken.js";
 
@@ -25,7 +27,7 @@ export const registar = async function (data) {
   let token = generateToekn(newUser._id);
 
   return {
-    newUser: userObject,
+    newUser: userResponse(newUser),
     token,
   };
 };
@@ -46,5 +48,5 @@ export const login = async function (data) {
   }
 
   const token = generateToekn(user._id);
-  return { user: user, token };
+  return { user: userResponse(user), token };
 };

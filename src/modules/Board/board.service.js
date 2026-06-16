@@ -2,8 +2,12 @@ import {
   createBoard,
   findBoradByid,
   findBoradByidWithPopulate,
+  findAllBoardsInWorkspace,
+  updateBoard,
+  deleteBoard,
 } from "./board.repo.js";
 import appErrs from "../../shared/errors/appErrors.js";
+import { checkUserWorkspaceMembership } from "../workSpace/workspace.service.js";
 import { boardResponse } from "../../shared/utils/boaed.response.js";
 export const createBoardService = async function (
   userId,
@@ -59,4 +63,69 @@ export const addCoulmnToBOardService = async function (
   await board.save();
 
   return boardResponse(board);
+};
+
+export const getAllBoardsInWorkspaceService = async function (
+  userId,
+  workspaceId,
+) {
+  await checkUserWorkspaceMembership(userId, workspaceId);
+
+  const boards = await findAllBoardsInWorkspace(workspaceId);
+  return boards.map(boardResponse);
+};
+
+export const getBoardByIdService = async function (
+  userId,
+  workspaceId,
+  boardId,
+) {
+  await checkUserWorkspaceMembership(userId, workspaceId);
+  const board = await findBoradByidWithPopulate(boardId);
+  if (!board) {
+    throw new appErrs("Board not found", 404);
+  }
+  return boardResponse(board);
+};
+
+export const updateBoardService = async function (
+  userId,
+  workspaceId,
+  boardId,
+  data,
+) {
+  await checkUserWorkspaceMembership(userId, workspaceId);
+  const board = await findBoradByid(boardId);
+  if (!board) {
+    throw new appErrs("Board not found", 404);
+  }
+
+  const allowedFields = ["name", "description"];
+  const filteredData = {};
+  Object.keys(data).forEach((key) => {
+    if (allowedFields.includes(key)) {
+      filteredData[key] = data[key];
+    }
+  });
+
+  if (Object.keys(filteredData).length === 0) {
+    throw new appErrs("No valid fields provided for update", 400);
+  }
+
+  const updatedBoard = await updateBoard(boardId, filteredData);
+  return boardResponse(updatedBoard);
+};
+
+export const deleteBoardService = async function (
+  userId,
+  workspaceId,
+  boardId,
+) {
+  await checkUserWorkspaceMembership(userId, workspaceId);
+  const board = await findBoradByid(boardId);
+  if (!board) {
+    throw new appErrs("Board not found", 404);
+  }
+  const deletedBoard = await deleteBoard(boardId);
+  return boardResponse(deletedBoard);
 };

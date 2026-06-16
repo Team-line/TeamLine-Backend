@@ -10,7 +10,7 @@ import {
   findPendingInvitationByIdRepo,
   findMemberAndUpdateRoleRepo,
 } from "./workspace.reposotry.js";
-
+import { workspaceModel } from "./workspace.modle.js";
 import { getUserViaEmail } from "../users/user.reposotry.js";
 import { formatWorkspace } from "../../shared/utils/workSpaceResponce.js";
 import appErrors from "../../shared/errors/appErrors.js";
@@ -190,4 +190,18 @@ export const findMemberAndUpdateRoleService = async function (
     role,
   );
   return formatWorkspace(updatedWorkspace);
+};
+
+export const checkUserWorkspaceMembership = async (userId, workspaceId) => {
+  // the exists method its need a index for the workspace and members.user field to be fast
+  // also its more efficient than findOne because it will stop searching once it find a match
+  // its only search in the index without loading the full document like findOne does
+  const exists = await workspaceModel.exists({
+    _id: workspaceId,
+    "members.user": userId,
+    isDeleted: false,
+  });
+  if (!exists) {
+    throw new appErrs("You are not a member of this workspace", 403);
+  }
 };

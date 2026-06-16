@@ -5,6 +5,7 @@ import {
   getUserByIdWithPAssword,
   getUserByIdAndUpdate,
 } from "./user.reposotry.js";
+import { userResponse } from "../../shared/utils/userResponse.js";
 import appErrors from "../../shared/errors/appErrors.js";
 import { resetPasswordTemplate } from "../../shared/utils/resetPassword.template.js";
 import { sendEmail } from "../../shared/utils/email.service.js";
@@ -15,7 +16,7 @@ export const getUserProfile = async function (userId) {
   if (!user) {
     throw new appErrors("the user is not found", 404);
   }
-  return user;
+  return userResponse(user);
 };
 
 export const forgotPassword = async function (email, resetBaseUrl) {
@@ -68,7 +69,7 @@ export const resetPassword = async function (resetToken, newPassword) {
   // 4- Return a success message
 
   const token = generateToekn(user._id);
-  return { user, token };
+  return { user: userResponse(user), token };
 };
 
 export const resetUserPassword = async function (id, prePass, newPassword) {
@@ -86,7 +87,7 @@ export const resetUserPassword = async function (id, prePass, newPassword) {
   await user.save(); //! here the correct is without validateBeforeSave because we want to run the pre save middleware to hash the password and update the passwordChangedAt field
   let token = generateToekn(user._id);
 
-  return { user, token };
+  return { user: userResponse(user), token };
 };
 
 export const updateUserDate = async function (id, data) {
@@ -112,7 +113,7 @@ export const updateUserDate = async function (id, data) {
 
   await user.save({ validateBeforeSave: true });
 
-  return user;
+  return userResponse(user);
 };
 
 export const deleteUser = async function (id) {
@@ -129,5 +130,5 @@ export const deleteUser = async function (id) {
     throw new appErrors("the user is already deleted", 400);
   }
 
-  return user;
+  return userResponse(user);
 };

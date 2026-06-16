@@ -10,3 +10,37 @@ export const findBoradByid = function (id) {
 export const findBoradByidWithPopulate = function (id) {
   return boardModel.findById(id).populate("workspace");
 };
+
+export const findAllBoardsInWorkspace = function (workspaceId) {
+  return boardModel.find({ workspace: workspaceId, isDeleted: false });
+};
+
+export const updateBoard = function (boardId, data) {
+  return boardModel
+    .findByIdAndUpdate(
+      boardId,
+      {
+        $set: data,
+      },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      },
+    )
+    .lean();
+};
+
+export const deleteBoard = function (boardId) {
+  return boardModel
+    .findByIdAndUpdate(
+      boardId,
+      {
+        $set: { isDeleted: true },
+      },
+      {
+        returnDocument: "after",
+        runValidators: true,
+      },
+    )
+    .lean();
+};
