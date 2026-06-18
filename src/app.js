@@ -3,6 +3,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import cors from "cors";
 import ratelimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 
 import authRouter from "./modules/auth/auth.routes.js";
 import userRouter from "./modules/users/user.route.js";
@@ -39,6 +40,8 @@ app.use(
     limit: "10kb",
   }),
 );
+
+app.use(cookieParser());
 
 const authLimiter = ratelimit({
   windowMs: 15 * 60 * 1000, // 15 minutes to reset the count

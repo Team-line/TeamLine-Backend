@@ -25,6 +25,10 @@ const envSchema = Joi.object({
     "any.required": "JWT_SECRET is required",
     "string.base": "JWT_SECRET must be a string",
   }),
+  REFRESH_TOKEN_SECRET: Joi.string().required().messages({
+    "any.required": "REFRESH_TOKEN_SECRET is required",
+    "string.base": "REFRESH_TOKEN_SECRET must be a string",
+  }),
   JWT_EXPIRE: Joi.string().required().messages({
     "any.required": "JWT_EXPIRE is required",
     "string .base": "JWT_EXPIRE must be a string",
@@ -71,4 +75,6 @@ export const {
   PORT_EMAIL,
   EMAIL_FROM,
   RESEND_API_KEY,
+  REFRESH_TOKEN_SECRET,
+  REFRESH_TOKEN_EXPIRE,
 } = value;
