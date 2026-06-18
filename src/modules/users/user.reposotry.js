@@ -34,3 +34,23 @@ export const getUserByIdAndUpdate = async function (id, data) {
     runValidators: true,
   });
 };
+
+export const getUserByIdToDelete = async function (id) {
+  return userModel.findOne({ _id: id, isDeleted: false });
+};
+
+export const updateUserName = async function (id, name) {
+  const user = await userModel.findOneAndUpdate(
+    {
+      _id: id,
+      isDeleted: false,
+    },
+    {
+      $set: { name },
+    },
+    {
+      new: true,
+      runValidators: true,
+    },
+  );
+};

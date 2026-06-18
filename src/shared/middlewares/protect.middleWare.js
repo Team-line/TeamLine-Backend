@@ -25,7 +25,6 @@ export const protect = asyncWrapper(async (req, res, next) => {
   let decode;
   try {
     decode = jwt.verify(token, JWT_SECRET);
-    console.log(decode);
   } catch (err) {
     return next(new appError("Invalid token. Please log in again.", 401));
   }

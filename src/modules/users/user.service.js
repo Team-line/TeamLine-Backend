@@ -4,6 +4,8 @@ import {
   getUserByResetToken,
   getUserByIdWithPAssword,
   getUserByIdAndUpdate,
+  getUserByIdToDelete,
+  updateUserName,
 } from "./user.reposotry.js";
 import { userResponse } from "../../shared/utils/userResponse.js";
 import appErrors from "../../shared/errors/appErrors.js";
@@ -117,10 +119,7 @@ export const updateUserDate = async function (id, data) {
 };
 
 export const deleteUser = async function (id) {
-  const user = await getUserByIdAndUpdate(id, {
-    isDeleted: true,
-    deletedAt: Date.now(),
-  });
+  const user = await getUserByIdToDelete(id);
 
   if (!user) {
     throw new appErrors(`the user not found with this id "${id}"`, 404);
@@ -130,5 +129,8 @@ export const deleteUser = async function (id) {
     throw new appErrors("the user is already deleted", 400);
   }
 
+  user.isDeleted = true;
+  user.deletedAt = Date.now();
+  await user.save();
   return userResponse(user);
 };
