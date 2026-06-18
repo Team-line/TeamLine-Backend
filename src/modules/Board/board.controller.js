@@ -5,6 +5,9 @@ import {
   getBoardByIdService,
   updateBoardService,
   deleteBoardService,
+  changeCoulmnNameService,
+  deleteCoulmnService,
+  getCoulmnByIdService,
 } from "./board.service.js";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
 
@@ -49,5 +52,38 @@ export const deleteBoardController = asyncWrapper(async (req, res) => {
   const { workspaceId, boardId } = req.params;
   const userId = req.user.id;
   await deleteBoardService(userId, workspaceId, boardId);
+  res.status(204).json({ status: "success", data: null });
+});
+
+export const getCoulmnByIdController = asyncWrapper(async (req, res) => {
+  const { boardId, columnId, workspaceId } = req.params;
+  const userId = req.user.id;
+  const data = await getCoulmnByIdService(
+    userId,
+    boardId,
+    workspaceId,
+    columnId,
+  );
+  res.status(200).json({ status: "success", data });
+});
+
+export const changeCoulmnNameController = asyncWrapper(async (req, res) => {
+  const { boardId, columnId, workspaceId } = req.params;
+  const userId = req.user.id;
+  const { newName } = req.body;
+  const data = await changeCoulmnNameService(
+    userId,
+    boardId,
+    workspaceId,
+    columnId,
+    newName,
+  );
+  res.status(200).json({ status: "success", data });
+});
+
+export const deleteCoulmnController = asyncWrapper(async (req, res) => {
+  const { boardId, columnId, workspaceId } = req.params;
+  const userId = req.user.id;
+  await deleteCoulmnService(userId, boardId, columnId);
   res.status(204).json({ status: "success", data: null });
 });

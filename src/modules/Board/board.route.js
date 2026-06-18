@@ -6,6 +6,9 @@ import {
   getBoardByIdController,
   updateBoardController,
   deleteBoardController,
+  changeCoulmnNameController,
+  deleteCoulmnController,
+  getCoulmnByIdController,
 } from "./board.controller.js";
 import { protect } from "../../shared/middlewares/protect.middleWare.js";
 const router = Router({ mergeParams: true });
@@ -15,6 +18,15 @@ router.get("/", protect, getAllBoardsInWorkspaceController);
 router.get("/:boardId", protect, getBoardByIdController);
 router.patch("/:boardId", protect, updateBoardController);
 router.delete("/:boardId", protect, deleteBoardController);
+
+router.patch(
+  "/:boardId/columns/:columnId",
+  protect,
+  changeCoulmnNameController,
+);
+
+router.delete("/:boardId/columns/:columnId", protect, deleteCoulmnController);
+router.get("/:boardId/columns/:columnId", protect, getCoulmnByIdController);
 
 router.post("/:boardId/columns", protect, addCoulmnToBOardController);
 export default router;

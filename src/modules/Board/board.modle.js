@@ -56,7 +56,10 @@ const boardSchema = new mongoose.Schema(
 );
 
 boardSchema.pre("save", function () {
-  if (this.isNew) {
+  // !Note : this conditiom is to the case if the frontend send empty array of columns or not send columns at all we will add the default columns to the board
+  // so if the front send a coulmn array with length more than 0 we will not add the default columns to the board
+  // the coulmn thats will added is thats created by the backend( TODO IN PROGRSS DONE)
+  if (this.isNew && (!this.columns || this.columns.length === 0)) {
     this.columns = [
       { name: "To Do", order: 0 },
       { name: "In Progress", order: 1 },

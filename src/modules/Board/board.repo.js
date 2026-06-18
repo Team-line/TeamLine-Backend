@@ -44,3 +44,15 @@ export const deleteBoard = function (boardId) {
     )
     .lean();
 };
+
+export const getCoulmnById = function (boardId, columnId) {
+  return boardModel.findOne({ _id: boardId, "columns._id": columnId });
+};
+
+export const updateCoulmnName = function (boardId, columnId, newName) {
+  return boardModel.findOneAndUpdate(
+    { _id: boardId, "columns._id": columnId },
+    { $set: { "columns.$.name": newName } },
+    { new: true },
+  );
+};

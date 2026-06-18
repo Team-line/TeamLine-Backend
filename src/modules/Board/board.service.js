@@ -5,6 +5,8 @@ import {
   findAllBoardsInWorkspace,
   updateBoard,
   deleteBoard,
+  getCoulmnById,
+  updateCoulmnName,
 } from "./board.repo.js";
 import appErrs from "../../shared/errors/appErrors.js";
 import { checkUserWorkspaceMembership } from "../workSpace/workspace.service.js";
@@ -128,4 +130,84 @@ export const deleteBoardService = async function (
   }
   const deletedBoard = await deleteBoard(boardId);
   return boardResponse(deletedBoard);
+};
+
+export const getCoulmnByIdService = async function (
+  userId,
+  boardId,
+  workspaceId,
+  columnId,
+) {
+  const board = await findBoradByid(boardId);
+  if (!board) {
+    throw new appErrs("Board not found", 404);
+  }
+
+  await checkUserWorkspaceMembership(userId, workspaceId);
+
+  const column = board.columns.find(
+    (c) => c._id.toString() === columnId.toString(),
+  );
+  if (!column) {
+    throw new appErrs("Column not found", 404);
+  }
+
+  return column;
+};
+
+export const changeCoulmnNameService = async function (
+  userId,
+  boardId,
+  workspaceId,
+  columnId,
+  newName,
+) {
+  const board = await findBoradByid(boardId);
+  if (!board) {
+    throw new appErrs("Board not found", 404);
+  }
+  await checkUserWorkspaceMembership(userId, workspaceId);
+  if (board.isDeleted) {
+    throw new appErrs("Board is deleted", 400);
+  }
+  const coulmn = await getCoulmnByIdService(
+    userId,
+    boardId,
+    workspaceId,
+    columnId,
+  );
+  if (!coulmn) {
+    throw new appErrs("Column not found", 404);
+  }
+  if (coulmn.columns.some((column) => column.name === newName)) {
+    throw new appErrs("Column with this name already exists", 400);
+  }
+  const updatedColumn = await updateCoulmnName(boardId, columnId, newName);
+  return boardResponse(updatedColumn);
+};
+
+export const deleteCoulmnService = async function (userId, boardId, columnId) {
+  const board = await findBoradByid(boardId);
+  if (!board) {
+    throw new appErrs("Board not found", 404);
+  }
+  await checkUserWorkspaceMembership(userId, workspaceId);
+  if (board.isDeleted) {
+    throw new appErrs("Board is deleted", 400);
+  }
+  const coulmn = await getCoulmnById(boardId, columnId);
+  if (!coulmn) {
+    throw new appErrs("Column not found", 404);
+  }
+
+  if (board.columns.length <= 1) {
+    throw new appErrs("Cannot delete the last column of the board", 400);
+  }
+
+  // this is for the  delete the column from the board and save the board
+  board.columns = board.columns.filter(
+    (column) => column._id.toString() !== columnId.toString(),
+  );
+  await board.save();
+  return boardResponse(board);
 };

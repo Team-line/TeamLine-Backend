@@ -5,7 +5,6 @@ import {
   getUserByIdWithPAssword,
   getUserByIdAndUpdate,
   getUserByIdToDelete,
-  updateUserName,
 } from "./user.reposotry.js";
 import { userResponse } from "../../shared/utils/userResponse.js";
 import appErrors from "../../shared/errors/appErrors.js";
