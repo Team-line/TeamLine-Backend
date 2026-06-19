@@ -56,3 +56,24 @@ export const updateCoulmnName = function (boardId, columnId, newName) {
     { new: true },
   );
 };
+
+export const findBoardByIdAndWorkspaceId = function (boardId, workspaceId) {
+  return boardModel.findOne({
+    _id: boardId,
+    workspace: workspaceId,
+    isDeleted: false,
+  });
+};
+
+export const findColumnINBoard = function (boardId, workspaceId, columnId) {
+  return boardModel.findOne(
+    {
+      _id: boardId,
+      workspace: workspaceId,
+      isDeleted: false,
+    },
+    { columns: { $elemMatch: { _id: columnId } } },
+    // this will return the board with only the matching column in the columns array
+    // { "_id": "board_111","columns": [{ "_id": "col_bbb", "name": "In Progress", "order": 1 }] }
+  );
+};

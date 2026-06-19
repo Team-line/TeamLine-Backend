@@ -84,6 +84,6 @@ export const changeCoulmnNameController = asyncWrapper(async (req, res) => {
 export const deleteCoulmnController = asyncWrapper(async (req, res) => {
   const { boardId, columnId, workspaceId } = req.params;
   const userId = req.user.id;
-  await deleteCoulmnService(userId, boardId, columnId);
+  await deleteCoulmnService(userId, workspaceId, boardId, columnId);
   res.status(204).json({ status: "success", data: null });
 });

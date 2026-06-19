@@ -202,6 +202,6 @@ export const checkUserWorkspaceMembership = async (userId, workspaceId) => {
     isDeleted: false,
   });
   if (!exists) {
-    throw new appErrs("You are not a member of this workspace", 403);
+    throw new appErrors("You are not a member of this workspace", 403);
   }
 };

@@ -7,10 +7,13 @@ import {
   deleteBoard,
   getCoulmnById,
   updateCoulmnName,
+  findBoardByIdAndWorkspaceId,
+  findColumnINBoard,
 } from "./board.repo.js";
 import appErrs from "../../shared/errors/appErrors.js";
 import { checkUserWorkspaceMembership } from "../workSpace/workspace.service.js";
 import { boardResponse } from "../../shared/utils/boaed.response.js";
+
 export const createBoardService = async function (
   userId,
   workspaceId,
@@ -132,27 +135,25 @@ export const deleteBoardService = async function (
   return boardResponse(deletedBoard);
 };
 
+// !***************   COLUMN SERVICES    *****************
+
 export const getCoulmnByIdService = async function (
   userId,
   boardId,
   workspaceId,
   columnId,
 ) {
-  const board = await findBoradByid(boardId);
-  if (!board) {
-    throw new appErrs("Board not found", 404);
-  }
+  const board = await findColumnINBoard(boardId, workspaceId, columnId);
 
   await checkUserWorkspaceMembership(userId, workspaceId);
 
-  const column = board.columns.find(
-    (c) => c._id.toString() === columnId.toString(),
-  );
-  if (!column) {
+  if (!board) {
     throw new appErrs("Column not found", 404);
   }
-
-  return column;
+  if (!board.columns || board.columns.length === 0) {
+    throw new appError("there is no columns in the board", 404);
+  }
+  return boardResponse(board.columns[0]);
 };
 
 export const changeCoulmnNameService = async function (
@@ -162,40 +163,53 @@ export const changeCoulmnNameService = async function (
   columnId,
   newName,
 ) {
-  const board = await findBoradByid(boardId);
-  if (!board) {
-    throw new appErrs("Board not found", 404);
-  }
   await checkUserWorkspaceMembership(userId, workspaceId);
-  if (board.isDeleted) {
-    throw new appErrs("Board is deleted", 400);
-  }
-  const coulmn = await getCoulmnByIdService(
-    userId,
-    boardId,
-    workspaceId,
-    columnId,
-  );
-  if (!coulmn) {
+  const board = await findBoardByIdAndWorkspaceId(boardId, workspaceId);
+  if (!board) {
     throw new appErrs("Column not found", 404);
+    if (board.isDeleted) {
+      throw new appErrs("Board is deleted", 400);
+    }
   }
-  if (coulmn.columns.some((column) => column.name === newName)) {
-    throw new appErrs("Column with this name already exists", 400);
+  const column = board.columns.find(
+    (c) => c._id.toString() === columnId.toString(),
+  );
+  if (!column) {
+    throw new appError("Column not found in this board", 404);
   }
-  const updatedColumn = await updateCoulmnName(boardId, columnId, newName);
-  return boardResponse(updatedColumn);
+  const isNameDuplicate = board.columns.some(
+    (c) =>
+      c.name.toLowerCase() === newName.trim().toLowerCase() &&
+      c._id.toString() !== columnId.toString(),
+  );
+  if (isNameDuplicate) {
+    throw new appError(
+      "A column with this name already exists on this board",
+      400,
+    );
+  }
+  column.name = newName.trim();
+  await board.save();
+  return boardResponse(column);
 };
 
-export const deleteCoulmnService = async function (userId, boardId, columnId) {
-  const board = await findBoradByid(boardId);
+export const deleteCoulmnService = async function (
+  userId,
+  workspaceId,
+  boardId,
+  columnId,
+) {
+  await checkUserWorkspaceMembership(userId, workspaceId);
+  const board = await findBoardByIdAndWorkspaceId(boardId, workspaceId);
   if (!board) {
     throw new appErrs("Board not found", 404);
   }
-  await checkUserWorkspaceMembership(userId, workspaceId);
   if (board.isDeleted) {
     throw new appErrs("Board is deleted", 400);
   }
-  const coulmn = await getCoulmnById(boardId, columnId);
+  const coulmn = board.columns.find(
+    (c) => c._id.toString() === columnId.toString(),
+  );
   if (!coulmn) {
     throw new appErrs("Column not found", 404);
   }
@@ -204,10 +218,7 @@ export const deleteCoulmnService = async function (userId, boardId, columnId) {
     throw new appErrs("Cannot delete the last column of the board", 400);
   }
 
-  // this is for the  delete the column from the board and save the board
-  board.columns = board.columns.filter(
-    (column) => column._id.toString() !== columnId.toString(),
-  );
+  board.columns.pull(columnId); // Remove the column from the board's columns array
   await board.save();
-  return boardResponse(board);
+  return boardResponse(coulmn);
 };
