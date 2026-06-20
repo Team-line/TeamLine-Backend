@@ -9,6 +9,7 @@ import authRouter from "./modules/auth/auth.routes.js";
 import userRouter from "./modules/users/user.route.js";
 import workSpaceRouter from "./modules/workSpace/workspace.route.js";
 import boardRouter from "./modules/Board/board.route.js";
+import taskRouter from "./modules/tasks/tasks.route.js";
 
 import appErrors from "./shared/errors/appErrors.js";
 
@@ -25,10 +26,12 @@ if (NODE_ENV === "development") {
 app.use(
   // TODO in the production (https://your-production-domain.com)
   cors({
-    origin:
+    origin: [
       NODE_ENV === "production"
         ? "https://your-production-domain.com"
         : "http://localhost:3000",
+      "https://team-line-frontendnew.vercel.app/",
+    ],
     credentials: true, // its for the allow cookies and the authorization header
 
     optionsSuccessStatus: 200,
@@ -60,6 +63,8 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/workspaces", workSpaceRouter);
 app.use("/api/v1/workspaces/:workspaceId/boards", boardRouter);
 app.use("/api/v1/boards", boardRouter);
+app.use("/api/v1/tasks", taskRouter);
+
 app.use((req, res, next) => {
   next(new appErrors(`Can't find ${req.originalUrl} on this server!`, 404));
 });
