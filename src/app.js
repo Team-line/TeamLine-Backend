@@ -30,11 +30,9 @@ app.use(
       NODE_ENV === "production"
         ? "https://your-production-domain.com"
         : "http://localhost:3000",
-      "https://team-line-frontendnew.vercel.app/",
+      "https://team-line-frontendnew.vercel.app",
     ],
-    credentials: true, // its for the allow cookies and the authorization header
-
-    optionsSuccessStatus: 200,
+    credentials: true,
   }),
 );
 
