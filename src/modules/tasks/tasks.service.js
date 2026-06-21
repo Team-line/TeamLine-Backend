@@ -105,3 +105,170 @@ export const getTaskByIdService = async function ({ userId, taskId }) {
 
   return formatTaskResponse(task);
 };
+
+export const updateTaskService = async function ({
+  userId,
+  taskId,
+  updateData,
+}) {
+  if (!mongoose.Types.ObjectId.isValid(taskId)) {
+    throw new appError("Invalid Task identity format", 400);
+  }
+
+  const task = await findTaskRepo(taskId);
+  if (!task || task.isDeleted) {
+    throw new appError("Task not found", 404);
+  }
+
+  await checkUserWorkspaceMembership(userId, task.workspace);
+
+  const allowedFields = ["name", "description", "assignees", "labels"];
+  const allowedUpdateData = {};
+
+  allowedFields.forEach((field) => {
+    if (updateData[field] !== undefined) {
+      allowedUpdateData[field] = updateData[field];
+    }
+  });
+
+  if (Object.keys(allowedUpdateData).length === 0) {
+    return formatTaskResponse(task);
+  }
+  task.set(allowedUpdateData);
+  await task.save();
+
+  return formatTaskResponse(task);
+};
+
+export const moveTaskPositionService = async function ({
+  userId,
+  taskId,
+  columnId,
+  newOrder,
+}) {
+  if (
+    !mongoose.Types.ObjectId.isValid(taskId) ||
+    !mongoose.Types.ObjectId.isValid(columnId)
+  ) {
+    throw new appError("Invalid Task or Column identity format", 400);
+  }
+
+  if (typeof newOrder !== "number" || newOrder < 1) {
+    throw new appError("New order must be a valid positive number", 400);
+  }
+
+  const task = await findTaskRepo(taskId);
+  if (!task || task.isDeleted) {
+    throw new appError("Task not found", 404);
+  }
+
+  await checkUserWorkspaceMembership(userId, task.workspace);
+
+  const TaskModel = mongoose.model("Task");
+  const oldColumnId = task.column;
+  const oldOrder = task.order;
+
+  const isColumnChanged = oldColumnId.toString() !== columnId.toString();
+  const isOrderChanged = oldOrder !== newOrder;
+
+  if (!isColumnChanged && !isOrderChanged) {
+    return formatTaskResponse(task);
+  }
+
+  // Validate column transition if the column has changed
+  if (isColumnChanged) {
+    await validateColumnTransition({
+      currentBoardId: task.board,
+      currentWorkspaceId: task.workspace,
+      newColumnId: columnId,
+    });
+  }
+
+  // ! if the task is moving within the same column, we need to adjust the order of other tasks in that column
+  if (!isColumnChanged && isOrderChanged) {
+    // ! 1) If the task is moving up (to a lower order number), we need to increment the order of tasks that are between the new and old order
+    if (newOrder < oldOrder) {
+      await TaskModel.updateMany(
+        {
+          board: task.board,
+          column: oldColumnId,
+          order: { $gte: newOrder, $lt: oldOrder }, //
+          isDeleted: false,
+        },
+        { $inc: { order: 1 } },
+      );
+      // ! 2) If the task is moving down (to a higher order number), we need to decrement the order of tasks that are between the old and new order
+    } else {
+      await TaskModel.updateMany(
+        {
+          board: task.board,
+          column: oldColumnId,
+          order: { $gt: oldOrder, $lte: newOrder },
+          isDeleted: false,
+        },
+        { $inc: { order: -1 } },
+      );
+    }
+  }
+  // ! if the task is moving to a different column, we need to adjust the order of tasks in both the old and new columns
+  else if (isColumnChanged) {
+    await TaskModel.updateMany(
+      {
+        board: task.board,
+        column: oldColumnId,
+        order: { $gt: oldOrder },
+        isDeleted: false,
+      },
+      { $inc: { order: -1 } },
+    );
+
+    await TaskModel.updateMany(
+      {
+        board: task.board,
+        column: columnId,
+        order: { $gte: newOrder },
+        isDeleted: false,
+      },
+      { $inc: { order: 1 } },
+    );
+  }
+
+  task.column = columnId;
+  task.order = newOrder;
+  await task.save();
+
+  return formatTaskResponse(task);
+};
+
+export const validateColumnTransition = async function ({
+  currentBoardId,
+  currentWorkspaceId,
+  newColumnId,
+}) {
+  if (!mongoose.Types.ObjectId.isValid(newColumnId)) {
+    throw new appError("Invalid target column identity format", 400);
+  }
+
+  const boardInWorkspace = await findBoardByIdAndWorkspaceId(
+    currentBoardId,
+    currentWorkspaceId,
+  );
+
+  if (!boardInWorkspace) {
+    throw new appError(
+      "The board associated with this task does not belong to the workspace.",
+      400,
+    );
+  }
+
+  const columnExists = boardInWorkspace.columns.some(
+    (col) => col._id.toString() === newColumnId.toString(),
+  );
+
+  if (!columnExists) {
+    throw new appError(
+      "The specified target column does not belong to this board.",
+      400,
+    );
+  }
+};
