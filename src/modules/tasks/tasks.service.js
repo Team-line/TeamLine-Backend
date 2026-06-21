@@ -272,3 +272,36 @@ export const validateColumnTransition = async function ({
     );
   }
 };
+
+export const deleteTaskService = async function ({ userId, taskId }) {
+  if (!mongoose.Types.ObjectId.isValid(taskId)) {
+    throw new appError("Invalid Task identity format", 400);
+  }
+
+  const task = await findTaskRepo(taskId);
+  if (!task || task.isDeleted) {
+    throw new appError("Task not found or already deleted", 404);
+  }
+
+  await checkUserWorkspaceMembership(userId, task.workspace);
+
+  const TaskModel = mongoose.model("Task");
+  const deletedOrder = task.order;
+  const columnId = task.column;
+
+  await TaskModel.updateMany(
+    {
+      board: task.board,
+      column: columnId,
+      order: { $gt: deletedOrder },
+      isDeleted: false,
+    },
+    { $inc: { order: -1 } },
+  );
+
+  task.isDeleted = true;
+  task.order = 0;
+  await task.save();
+
+  return { message: "Task deleted successfully and column order re-aligned" };
+};

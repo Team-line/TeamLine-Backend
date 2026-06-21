@@ -3,6 +3,7 @@ import {
   getTaskByIdService,
   updateTaskService,
   moveTaskPositionService,
+  deleteTaskService,
 } from "./tasks.service.js";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
 
@@ -77,5 +78,15 @@ export const moveTaskPositionController = asyncWrapper(async (req, res) => {
   res.status(200).json({
     status: "success",
     data: null,
+  });
+});
+
+export const deleteTaskController = asyncWrapper(async (req, res) => {
+  const { taskId } = req.params;
+  const userId = req.user.id;
+  const result = await deleteTaskService({ taskId, userId });
+  res.status(200).json({
+    status: "success",
+    data: result,
   });
 });
