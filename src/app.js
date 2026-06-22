@@ -26,12 +26,11 @@ if (NODE_ENV === "development") {
 app.use(
   // TODO in the production (https://your-production-domain.com)
   cors({
-    origin: [
+    origin:
       NODE_ENV === "production"
         ? "https://your-production-domain.com"
-        : "http://localhost:3000",
-      "https://team-line-frontendnew.vercel.app",
-    ],
+        : "https://team-line-frontendnew.vercel.app",
+
     credentials: true,
   }),
 );
