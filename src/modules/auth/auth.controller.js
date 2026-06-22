@@ -30,12 +30,12 @@ export const signUp = asyncWrapper(async (req, res, next) => {
 
   res.status(201).json({
     status: "success",
-    data: { newUser },
+    data: { user: newUser },
   });
 });
 
 export const signIn = asyncWrapper(async (req, res, next) => {
-  const { user, accessToken, refreshToken } = await login(req.body);
+  const { newUser, accessToken, refreshToken } = await login(req.body);
 
   res.cookie(
     "accessToken",
@@ -50,7 +50,7 @@ export const signIn = asyncWrapper(async (req, res, next) => {
 
   res.status(200).json({
     status: "success",
-    data: { user },
+    data: { user: newUser },
   });
 });
 

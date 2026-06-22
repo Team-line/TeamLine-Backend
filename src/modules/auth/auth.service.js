@@ -34,7 +34,12 @@ export const registar = async function (data) {
   });
 
   return {
-    newUser: userResponse(newUser),
+    newUser: {
+      id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      avatar: newUser.avatar,
+    },
     accessToken,
     refreshToken,
   };
@@ -63,7 +68,16 @@ export const login = async function (data) {
     ),
   });
 
-  return { user: userResponse(user), accessToken, refreshToken };
+  return {
+    newUser: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar,
+    },
+    accessToken,
+    refreshToken,
+  };
 };
 
 export const handleRefreshToken = async function (refreshToken) {
