@@ -10,7 +10,7 @@ import { JWT_EXPIRE, REFRESH_TOKEN_EXPIRE } from "../../config/env.js";
 const getCookieOptions = (maxAge) => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "none",
   maxAge,
 });
 
