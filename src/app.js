@@ -27,7 +27,7 @@ app.use(
   // TODO in the production (https://your-production-domain.com)
   cors({
     origin: [
-      "https://team-line-frontendnew.vercel.app",
+      "https://team-line-frontend-eight.vercel.app",
       "http://localhost:3000",
     ],
     credentials: true,
