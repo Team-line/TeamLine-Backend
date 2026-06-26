@@ -34,6 +34,9 @@ app.use(
   }),
 );
 
+// testing the html form data
+app.use(express.urlencoded({ extended: true }));
+
 app.use(
   express.json({
     limit: "10kb",
