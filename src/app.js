@@ -24,11 +24,11 @@ if (NODE_ENV === "development") {
 }
 
 app.use(
-  // TODO in the production (https://your-production-domain.com)
   cors({
     origin: [
       "https://team-line-frontend-eight.vercel.app",
       "http://localhost:3000",
+      "http://localhost:5500",
     ],
     credentials: true,
   }),
