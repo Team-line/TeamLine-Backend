@@ -196,12 +196,18 @@ export const checkUserWorkspaceMembership = async (userId, workspaceId) => {
   // the exists method its need a index for the workspace and members.user field to be fast
   // also its more efficient than findOne because it will stop searching once it find a match
   // its only search in the index without loading the full document like findOne does
-  const exists = await workspaceModel.exists({
-    _id: workspaceId,
-    "members.user": userId,
-    isDeleted: false,
-  });
-  if (!exists) {
+  const workspace = await workspaceModel.findOne(
+    {
+      _id: workspaceId,
+      "members.user": userId,
+      isDeleted: false,
+    },
+    { members: 1 },
+  );
+
+  if (!workspace) {
     throw new appErrors("You are not a member of this workspace", 403);
   }
+
+  return workspace;
 };

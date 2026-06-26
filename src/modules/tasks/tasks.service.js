@@ -1,4 +1,8 @@
-import { createTask, findTaskRepo } from "./tasks.repo.js";
+import {
+  createTask,
+  findTaskRepo,
+  findTaskWithoutPopulate,
+} from "./tasks.repo.js";
 import { checkUserWorkspaceMembership } from "../workSpace/workspace.service.js";
 import { findBoardByIdAndWorkspaceId } from "../Board/board.repo.js";
 import { formatTaskResponse } from "../../shared/utils/task.res.js";
@@ -304,4 +308,76 @@ export const deleteTaskService = async function ({ userId, taskId }) {
   await task.save();
 
   return { message: "Task deleted successfully and column order re-aligned" };
+};
+
+export const assignTaskService = async function ({
+  taskId,
+  userId,
+  assigneesId,
+}) {
+  // 1) check if the task exists and is not deleted
+  const task = await findTaskWithoutPopulate(taskId);
+  if (!task || task.isDeleted) {
+    throw new appError("Task not found or already deleted", 404);
+  }
+
+  //2) check if the user is the owner of the task
+  if (userId.toString() !== task.createdBy.toString()) {
+    throw new appError(
+      "You are not the owner of this task the owner can assign the task only",
+      403,
+    );
+  }
+  // 3) check if the user is a member of the workspace
+  const workspace = await checkUserWorkspaceMembership(userId, task.workspace);
+
+  // 4) check if the assigneesId is an array and has at most 5 members
+  console.log(assigneesId);
+  console.log(assigneesId.length);
+
+  if (!Array.isArray(assigneesId) || assigneesId.length > 5) {
+    throw new appError(
+      "Assignees must be an array with at most 5 members",
+      400,
+    );
+  }
+
+  // 5) cheak if the assigneesId are valid ObjectIds
+
+  for (const assigneeId of assigneesId) {
+    if (!mongoose.Types.ObjectId.isValid(assigneeId)) {
+      throw new appError(
+        `Invalid assignee identity format: ${assigneeId}`,
+        400,
+      );
+    }
+  }
+
+  // 6) cheak if the assigneesId are members of the workspace
+  // its for a convert to string to compare with the assigneesId
+  const workspaceMemberIds = workspace.members.map((member) =>
+    member.user.toString(),
+  );
+
+  const allAssigneesAreMembers = assigneesId.every((assigneeId) =>
+    workspaceMemberIds.includes(assigneeId.toString()),
+  );
+
+  if (!allAssigneesAreMembers) {
+    throw new appError("All assignees must be members of the workspace", 400);
+  }
+
+  // 7) assign the task to the assigneesId
+
+  task.assignees = assigneesId;
+
+  await task.save();
+  await task.populate("assignees", "name email");
+
+  // ToDo before saving the task send email to the assignees that they have been assigned to the task
+
+  return {
+    message: "Task assigned successfully",
+    task: formatTaskResponse(task),
+  };
 };
