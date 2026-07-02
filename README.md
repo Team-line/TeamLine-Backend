@@ -10,26 +10,26 @@ Built with **Node.js, Express.js, and MongoDB**, following a feature-based modul
 
 # 🚀 Features (MVP)
 
-* 🔐 Authentication (JWT-based)
-* 👥 Workspace management
-* 📋 Kanban boards system
-* 🧩 Custom columns per board
-* ✅ Task creation & assignment
-* 🔄 Drag & drop task movement (API support)
-* ⏱️ Time tracking per task
-* 📊 Weekly reports generation (export-ready structure)
+- 🔐 Authentication (JWT-based)
+- 👥 Workspace management
+- 📋 Kanban boards system
+- 🧩 Custom columns per board
+- ✅ Task creation & assignment
+- 🔄 Drag & drop task movement (API support)
+- ⏱️ Time tracking per task
+- 📊 Weekly reports generation (export-ready structure)
 
 ---
 
 # 🏗️ Tech Stack
 
-* Node.js
-* Express.js
-* MongoDB + Mongoose
-* JWT Authentication
-* bcrypt (password hashing)
-* dotenv
-* cors + helmet (security)
+- Node.js
+- Express.js
+- MongoDB + Mongoose
+- JWT Authentication
+- bcrypt (password hashing)
+- dotenv
+- cors + helmet (security)
 
 ---
 
@@ -57,11 +57,11 @@ src/
 
 Each module contains:
 
-* controller
-* service
-* routes
-* model
-* validation (where needed)
+- controller
+- service
+- routes
+- model
+- validation (where needed)
 
 ---
 
@@ -80,7 +80,7 @@ npm install
 Create a `.env` file:
 
 ```env
-PORT=5000
+PORT=3000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_secret_key
 JWT_EXPIRES_IN=7d
@@ -128,42 +128,42 @@ Authorization: Bearer <token>
 
 ## Auth
 
-* Register
-* Login
-* JWT validation
+- Register
+- Login
+- JWT validation
 
 ## Tasks
 
-* Create task
-* Update task
-* Assign user
-* Move between columns
+- Create task
+- Update task
+- Assign user
+- Move between columns
 
 ## Boards
 
-* Create board
-* Manage structure
+- Create board
+- Manage structure
 
 ## Time Tracking
 
-* Start timer
-* Stop timer
-* Log work hours
+- Start timer
+- Stop timer
+- Log work hours
 
 ## Reports
 
-* Weekly aggregation
-* Export-ready data
+- Weekly aggregation
+- Export-ready data
 
 ---
 
 # 🧠 Design Principles
 
-* Modular architecture (feature-based)
-* Separation of concerns
-* Scalable backend structure
-* Stateless API design
-* Clean error handling system
+- Modular architecture (feature-based)
+- Separation of concerns
+- Scalable backend structure
+- Stateless API design
+- Clean error handling system
 
 ---
 
@@ -175,11 +175,11 @@ Authorization: Bearer <token>
 
 # 📌 Future Improvements
 
-* Real-time collaboration (WebSockets)
-* Notifications system
-* Mobile application
-* AI task suggestions
-* Advanced analytics dashboard
+- Real-time collaboration (WebSockets)
+- Notifications system
+- Mobile application
+- AI task suggestions
+- Advanced analytics dashboard
 
 ---
 

@@ -9,6 +9,7 @@ import {
   updateCoulmnName,
   findBoardByIdAndWorkspaceId,
   findColumnINBoard,
+  findColumnsByBoardId,
 } from "./board.repo.js";
 import appErrs from "../../shared/errors/appErrors.js";
 import { checkUserWorkspaceMembership } from "../workSpace/workspace.service.js";
@@ -221,4 +222,19 @@ export const deleteCoulmnService = async function (
   board.columns.pull(columnId); // Remove the column from the board's columns array
   await board.save();
   return boardResponse(coulmn);
+};
+
+export const getAllCoulmnsService = async function (
+  userId,
+  workspaceId,
+  boardId,
+) {
+  await checkUserWorkspaceMembership(userId, workspaceId);
+
+  const board = await findColumnsByBoardId(boardId, workspaceId);
+  if (!board) {
+    throw new appErrs("Board not found", 404);
+  }
+
+  return board.columns;
 };
