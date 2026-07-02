@@ -77,3 +77,14 @@ export const findColumnINBoard = function (boardId, workspaceId, columnId) {
     // { "_id": "board_111","columns": [{ "_id": "col_bbb", "name": "In Progress", "order": 1 }] }
   );
 };
+
+export const findColumnsByBoardId = function (boardId, workspaceId) {
+  return boardModel.findOne(
+    {
+      _id: boardId,
+      workspace: workspaceId,
+      isDeleted: false,
+    },
+    { columns: 1 },
+  );
+};

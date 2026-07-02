@@ -8,6 +8,7 @@ import {
   changeCoulmnNameService,
   deleteCoulmnService,
   getCoulmnByIdService,
+  getAllCoulmnsService,
 } from "./board.service.js";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
 
@@ -86,4 +87,13 @@ export const deleteCoulmnController = asyncWrapper(async (req, res) => {
   const userId = req.user.id;
   await deleteCoulmnService(userId, workspaceId, boardId, columnId);
   res.status(204).json({ status: "success", data: null });
+});
+
+export const getAllCoulmnsController = asyncWrapper(async (req, res) => {
+  const { workspaceId, boardId } = req.params;
+  const userId = req.user.id;
+
+  const data = await getAllCoulmnsService(userId, workspaceId, boardId);
+
+  res.status(200).json({ status: "success", data });
 });

@@ -9,6 +9,7 @@ import {
   changeCoulmnNameController,
   deleteCoulmnController,
   getCoulmnByIdController,
+  getAllCoulmnsController,
 } from "./board.controller.js";
 import { protect } from "../../shared/middlewares/protect.middleWare.js";
 const router = Router({ mergeParams: true });
@@ -18,6 +19,7 @@ router.get("/", protect, getAllBoardsInWorkspaceController);
 router.get("/:boardId", protect, getBoardByIdController);
 router.patch("/:boardId", protect, updateBoardController);
 router.delete("/:boardId", protect, deleteBoardController);
+router.get("/:boardId/columns", protect, getAllCoulmnsController);
 
 router.patch(
   "/:boardId/columns/:columnId",
