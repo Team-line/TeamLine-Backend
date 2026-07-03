@@ -28,7 +28,8 @@ export const deleteWorkSpace = async function (id) {
 };
 
 export const findWorkspaceMembersRepo = async (workspaceId) => {
-  return WorkspaceModel.findById(workspaceId)
+  return workspaceModel
+    .findById(workspaceId)
     .select("members")
     .populate("members.user", "name email avatar");
 };
