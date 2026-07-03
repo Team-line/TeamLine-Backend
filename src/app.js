@@ -63,6 +63,7 @@ app.use("/api/v1/workspaces", workSpaceRouter);
 app.use("/api/v1/workspaces/:workspaceId/boards", boardRouter);
 app.use("/api/v1/boards", boardRouter);
 app.use("/api/v1/tasks", taskRouter);
+app.use("/api/v1/workspaces/:workspaceId/boards/:boardId/tasks", taskRouter);
 
 app.use((req, res, next) => {
   next(new appErrors(`Can't find ${req.originalUrl} on this server!`, 404));

@@ -2,6 +2,7 @@ import {
   createTask,
   findTaskRepo,
   findTaskWithoutPopulate,
+  findAllTasksInBoardRepo,
 } from "./tasks.repo.js";
 import { checkUserWorkspaceMembership } from "../workSpace/workspace.service.js";
 import { findBoardByIdAndWorkspaceId } from "../Board/board.repo.js";
@@ -380,4 +381,34 @@ export const assignTaskService = async function ({
     message: "Task assigned successfully",
     task: formatTaskResponse(task),
   };
+};
+
+export const getAllTasksService = async function ({
+  userId,
+  workspaceId,
+  boardId,
+}) {
+  if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
+    throw new appError("Invalid Workspace identity format", 400);
+  }
+  if (!mongoose.Types.ObjectId.isValid(boardId)) {
+    throw new appError("Invalid Board identity format", 400);
+  }
+
+  await checkUserWorkspaceMembership(userId, workspaceId);
+
+  const boardInWorkspace = await findBoardByIdAndWorkspaceId(
+    boardId,
+    workspaceId,
+  );
+  if (!boardInWorkspace) {
+    throw new appError(
+      "The board associated with these tasks does not belong to the workspace.",
+      400,
+    );
+  }
+
+  const tasks = await findAllTasksInBoardRepo(boardId);
+
+  return tasks.map(formatTaskResponse);
 };

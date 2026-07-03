@@ -14,3 +14,9 @@ export const findTaskRepo = async (taskId) => {
 export const findTaskWithoutPopulate = async function (taskId) {
   return TaskModle.findOne({ _id: taskId, isDeleted: false });
 };
+
+export const findAllTasksInBoardRepo = async (boardId) => {
+  return TaskModle.find({ board: boardId, isDeleted: false })
+    .populate("assignees", "name email")
+    .sort({ order: 1 });
+};
