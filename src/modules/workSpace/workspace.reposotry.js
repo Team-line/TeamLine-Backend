@@ -27,6 +27,11 @@ export const deleteWorkSpace = async function (id) {
   );
 };
 
+export const findWorkspaceMembersRepo = async (workspaceId) => {
+  return WorkspaceModel.findById(workspaceId)
+    .select("members")
+    .populate("members.user", "name email avatar");
+};
 // ********************* invetation code *****************8
 
 export const createInvitationRepo = async function (

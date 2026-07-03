@@ -9,6 +9,7 @@ import {
   updateInvitationStatusRepo,
   findPendingInvitationByIdRepo,
   findMemberAndUpdateRoleRepo,
+  findWorkspaceMembersRepo,
 } from "./workspace.reposotry.js";
 import { workspaceModel } from "./workspace.modle.js";
 import { getUserViaEmail } from "../users/user.reposotry.js";
@@ -210,4 +211,28 @@ export const checkUserWorkspaceMembership = async (userId, workspaceId) => {
   }
 
   return workspace;
+};
+
+export const getWorkspaceMembersService = async function ({
+  userId,
+  workspaceId,
+}) {
+  await checkUserWorkspaceMembership(userId, workspaceId);
+
+  const workspaceData = await findWorkspaceMembersRepo(workspaceId);
+  if (!workspaceData) {
+    throw new appError("Workspace not found", 404);
+  }
+
+  const formattedMembers = workspaceData.members
+    .filter((member) => member.user)
+    .map((member) => ({
+      id: member.user._id,
+      name: member.user.name,
+      email: member.user.email,
+      avatar: member.user.avatar || null,
+      role: member.role,
+    }));
+
+  return formattedMembers;
 };
