@@ -11,6 +11,7 @@ import workSpaceRouter from "./modules/workSpace/workspace.route.js";
 import boardRouter from "./modules/Board/board.route.js";
 import taskRouter from "./modules/tasks/tasks.route.js";
 import timerRouter from "./modules/time-tracking/timeEntry.routes.js";
+import reportRouter from "./modules/reports/report.routes.js";
 
 import appErrors from "./shared/errors/appErrors.js";
 
@@ -65,8 +66,12 @@ app.use("/api/v1/workspaces/:workspaceId/boards", boardRouter);
 app.use("/api/v1/boards", boardRouter);
 app.use("/api/v1/tasks", taskRouter);
 app.use("/api/v1/workspaces/:workspaceId/boards/:boardId/tasks", taskRouter);
+app.use(
+  "/api/v1/workspaces/:workspaceId/boards/:boardId/columns/:columnId/tasks",
+  taskRouter,
+);
 app.use("/api/v1/timers", timerRouter);
-
+app.use("/api/v1/reports", reportRouter);
 app.use((req, res, next) => {
   next(new appErrors(`Can't find ${req.originalUrl} on this server!`, 404));
 });
