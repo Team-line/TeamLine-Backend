@@ -1,5 +1,5 @@
 import {
-  craeteTask,
+  createTaskService,
   getTaskByIdService,
   updateTaskService,
   moveTaskPositionService,
@@ -8,28 +8,17 @@ import {
   getAllTasksService,
 } from "./tasks.service.js";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
-
 export const createTaskController = asyncWrapper(async (req, res) => {
-  const {
-    name,
-    description,
-    workspace,
-    board,
-    column,
-    createdBy,
-    assignees,
-    labels,
-    order,
-  } = req.body;
-
+  const { name, description, assignees, labels, order } = req.body;
+  const { workspaceId, boardId, columnId } = req.params; // Get IDs from URL
   const userId = req.user.id;
 
-  const task = await craeteTask({
+  const task = await createTaskService({
     name,
     description,
-    workspace,
-    board,
-    column,
+    workspace: workspaceId,
+    board: boardId,
+    column: columnId,
     assignees,
     labels,
     order,

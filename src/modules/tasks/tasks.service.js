@@ -4,12 +4,13 @@ import {
   findTaskWithoutPopulate,
   findAllTasksInBoardRepo,
 } from "./tasks.repo.js";
+import { TaskModle } from "./tasks.modle.js";
 import { checkUserWorkspaceMembership } from "../workSpace/workspace.service.js";
 import { findBoardByIdAndWorkspaceId } from "../Board/board.repo.js";
 import { formatTaskResponse } from "../../shared/utils/task.res.js";
 import appError from "../../shared/errors/appErrors.js";
 import mongoose from "mongoose";
-export const craeteTask = async function (taskData) {
+export const createTaskService = async function (taskData) {
   const {
     name,
     description,
@@ -18,45 +19,39 @@ export const craeteTask = async function (taskData) {
     column,
     assignees,
     labels,
-    order,
     userId,
   } = taskData;
 
+  // 1. Validation
   if (
     !mongoose.Types.ObjectId.isValid(workspace) ||
     !mongoose.Types.ObjectId.isValid(board) ||
     !mongoose.Types.ObjectId.isValid(column)
   ) {
-    throw new appError(
-      "Invalid Workspace, Board, or Column identity format",
-      400,
-    );
+    throw new appError("Invalid IDs format", 400);
   }
 
+  // 2. Authorization & Existence checks
   await checkUserWorkspaceMembership(userId, workspace);
-
   const boardInWorkspace = await findBoardByIdAndWorkspaceId(board, workspace);
-  if (!boardInWorkspace) {
-    throw new appError(
-      "The specified board does not belong to the provided workspace.",
-      400,
-    );
-  }
+
+  if (!boardInWorkspace)
+    throw new appError("Board not found in workspace", 400);
+
   const columnExists = boardInWorkspace.columns.some(
     (col) => col._id.toString() === column.toString(),
   );
-  if (!columnExists) {
-    throw new appError(
-      "The specified column does not belong to this board.",
-      400,
-    );
-  }
+  if (!columnExists) throw new appError("Column not found in board", 400);
+
+  // 3. Logic: Calculate order
   const currentTasksCount = await mongoose.model("Task").countDocuments({
     board,
     column,
     isDeleted: false,
   });
-  const task = await createTask({
+
+  // 4. Persistence
+  const task = await TaskModle.create({
     name,
     description,
     workspace,

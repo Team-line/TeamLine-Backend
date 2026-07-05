@@ -11,7 +11,7 @@ import {
 import { protect } from "../../shared/middlewares/protect.middleWare.js";
 const router = Router({ mergeParams: true });
 
-router.post("/create", protect, createTaskController);
+router.post("/", protect, createTaskController);
 router.get("/", protect, getAllTasksController);
 router.get("/:taskId", protect, getTaskByIdController);
 router.patch("/:taskId", protect, updateTaskController);
