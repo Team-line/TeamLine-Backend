@@ -158,7 +158,7 @@ export const getWorkspaceMembersService = async function ({
 
 export const addMemberDirectly = async ({
   workspaceId,
-  targetUserId,
+  targetUserEmail,
   role = "member",
   requestingUserId,
 }) => {
@@ -178,24 +178,24 @@ export const addMemberDirectly = async ({
     throw new appErrors("Workspace has reached the limit of 50 members.", 400);
   }
 
-  const alreadyMember = workspace.members.some(
-    (m) => m.user.toString() === targetUserId.toString(),
-  );
-
-  if (alreadyMember) {
-    throw new appErrors("This user is already a workspace member.", 409);
-  }
-
   const userExists = await userModel
-    .findById(targetUserId)
+    .findOne({ email: targetUserEmail })
     .select("_id displayName name email");
 
   if (!userExists) {
     throw new appErrors("User not found.", 404);
   }
 
+  const alreadyMember = workspace.members.some(
+    (m) => m.user.toString() === userExists._id.toString(),
+  );
+
+  if (alreadyMember) {
+    throw new appErrors("This user is already a workspace member.", 409);
+  }
+
   workspace.members.push({
-    user: targetUserId,
+    user: userExists._id,
     role,
     joinedAt: new Date(),
   });

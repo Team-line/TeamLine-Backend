@@ -82,7 +82,7 @@ export const getWorkspaceMembersController = asyncWrapper(async (req, res) => {
 export const addMemberDirectlyHandler = asyncWrapper(async (req, res) => {
   const data = await addMemberDirectly({
     workspaceId: req.params.id,
-    targetUserId: req.body.user,
+    targetUserEmail: req.body.email,
     role: req.body.role,
     requestingUserId: req.user.id,
   });
