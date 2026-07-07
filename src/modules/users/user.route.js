@@ -5,6 +5,7 @@ import {
   resetPasswordController,
   updateMyPassword,
   updateUserDateController,
+  searchUserByEmailHandler,
 } from "./user.controller.js";
 import { protect } from "../../shared/middlewares/protect.middleWare.js";
 import {
@@ -40,3 +41,5 @@ userRouter.patch(
   updateUserDateController,
 );
 export default userRouter;
+
+userRouter.get("/search", protect, searchUserByEmailHandler);

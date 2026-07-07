@@ -4,10 +4,6 @@ import {
   getWorkSpaceById,
   updateWorkSpace,
   deleteWorkSpace,
-  inviteMemberToWOrkSpaceRepo,
-  createInvitationRepo,
-  updateInvitationStatusRepo,
-  findPendingInvitationByIdRepo,
   findMemberAndUpdateRoleRepo,
   findWorkspaceMembersRepo,
 } from "./workspace.reposotry.js";
@@ -17,7 +13,7 @@ import { formatWorkspace } from "../../shared/utils/workSpaceResponce.js";
 import appErrors from "../../shared/errors/appErrors.js";
 import { sendEmail } from "../../shared/utils/email.service.js";
 import { workspaceInviteTemplate } from "../../shared/utils/workspaceInvite.template.js";
-import invitationModel from "../invitation/invitation.modle.js";
+import { userModel } from "../users/user.model.js";
 
 export const createWorkSpaceService = async function (
   ownerID,
@@ -80,83 +76,6 @@ export const deleteWorkSpaceService = async function (id, userId) {
       401,
     );
   }
-  return formatWorkspace(workspace);
-};
-
-export const inviteMemberTOWorkSpace = async function (
-  workspaceId,
-  email,
-  userId,
-) {
-  const user = await getUserViaEmail(email);
-
-  if (!user) {
-    throw new appErrors("User not found", 404);
-  }
-  const workspace = await getWorkSpaceById(workspaceId);
-  if (!workspace) {
-    throw new appErrors("workspace not found", 404);
-  }
-  const hasAccess = workspace.isOwner(userId);
-
-  if (!hasAccess) {
-    throw new appErrors("only the owner can invite ", 403);
-  }
-
-  if (workspace.isOwner(user._id) || workspace.isMember(user._id)) {
-    throw new appErrors("User is already part of this workspace", 409);
-  }
-
-  const existingInvite = await invitationModel.findOne({
-    workspace: workspaceId,
-    invitedUser: user._id,
-    status: "pending",
-  });
-  if (existingInvite) {
-    throw new appErrors("An invitation is already pending for this user", 400);
-  }
-
-  if (workspace.members.length >= 50) {
-    throw new appErrors(
-      "Workspace has reached the maximum number of members",
-      400,
-    );
-  }
-
-  const invetation = await createInvitationRepo(workspaceId, user._id, userId);
-  const inviteLink = `http://localhost:3000/api/v1/workspaces/invitations/${invetation._id}`;
-
-  try {
-    const emailSubject = `Invitation to join "${workspace.name}" Workspace`;
-    const emailBody = workspaceInviteTemplate(workspace.name, inviteLink);
-    await sendEmail(user.email, emailBody, emailSubject);
-  } catch (error) {
-    console.error("Failed to send invitation email:", error);
-    throw new appErrors(
-      "Failed to send invitation email. Please try again later.",
-      500,
-    );
-  }
-  return { message: "Invitation sent successfully" };
-};
-
-export const acceptInvitationService = async function (inviteId, userId) {
-  const invitation = await findPendingInvitationByIdRepo(inviteId);
-  if (!invitation) {
-    throw new appErrors("Invitation not found or already processed", 404);
-  }
-  if (invitation.invitedUser.toString() !== userId) {
-    throw new appErrors(
-      "You are not authorized to accept this invitation",
-      403,
-    );
-  }
-  await updateInvitationStatusRepo(inviteId, "accepted");
-
-  const workspace = await inviteMemberToWOrkSpaceRepo(
-    invitation.workspace,
-    userId,
-  );
   return formatWorkspace(workspace);
 };
 
@@ -235,4 +154,61 @@ export const getWorkspaceMembersService = async function ({
     }));
 
   return formattedMembers;
+};
+
+export const addMemberDirectly = async ({
+  workspaceId,
+  targetUserId,
+  role = "member",
+  requestingUserId,
+}) => {
+  const workspace = await workspaceModel
+    .findById(workspaceId)
+    .select("owner members name isDeleted");
+
+  if (!workspace || workspace.isDeleted) {
+    throw new AppError("Workspace not found.", 404);
+  }
+
+  if (workspace.owner.toString() !== requestingUserId.toString()) {
+    throw new AppError("Only the workspace owner can add members.", 403);
+  }
+
+  if (workspace.members.length >= 50) {
+    throw new AppError("Workspace has reached the limit of 50 members.", 400);
+  }
+
+  const alreadyMember = workspace.members.some(
+    (m) => m.user.toString() === targetUserId.toString(),
+  );
+
+  if (alreadyMember) {
+    throw new AppError("This user is already a workspace member.", 409);
+  }
+
+  const userExists = await userModel
+    .findById(targetUserId)
+    .select("_id displayName name email");
+
+  if (!userExists) {
+    throw new AppError("User not found.", 404);
+  }
+
+  workspace.members.push({
+    user: targetUserId,
+    role,
+    joinedAt: new Date(),
+  });
+
+  await workspace.save();
+
+  return {
+    message: "Member added successfully.",
+    member: {
+      _id: userExists._id,
+      displayName: userExists.displayName || userExists.name,
+      email: userExists.email,
+      role,
+    },
+  };
 };

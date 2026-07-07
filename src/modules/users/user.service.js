@@ -11,6 +11,7 @@ import appErrors from "../../shared/errors/appErrors.js";
 import { resetPasswordTemplate } from "../../shared/utils/resetPassword.template.js";
 import { sendEmail } from "../../shared/utils/email.service.js";
 import { generateToekn } from "../../shared/utils/genarateToken.js";
+import { userModel } from "./user.model.js";
 
 export const getUserProfile = async function (userId) {
   const user = await getUserById(userId);
@@ -132,4 +133,20 @@ export const deleteUser = async function (id) {
   user.deletedAt = Date.now();
   await user.save();
   return userResponse(user);
+};
+
+export const searchUserByEmail = async ({ email, requestingUserId }) => {
+  const user = await userModel
+    .findOne({ email: email.toLowerCase().trim(), isDeleted: false })
+    .select("_id displayName name email avatarUrl");
+
+  if (!user) {
+    throw new appErrors("No user found with this email.", 404);
+  }
+
+  if (user._id.toString() === requestingUserId.toString()) {
+    throw new appErrors("You cannot add yourself.", 400);
+  }
+
+  return user;
 };
