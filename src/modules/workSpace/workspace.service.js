@@ -183,7 +183,7 @@ export const addMemberDirectly = async ({
   );
 
   if (alreadyMember) {
-    throw new AppError("This user is already a workspace member.", 409);
+    throw new appErrors("This user is already a workspace member.", 409);
   }
 
   const userExists = await userModel
@@ -191,7 +191,7 @@ export const addMemberDirectly = async ({
     .select("_id displayName name email");
 
   if (!userExists) {
-    throw new AppError("User not found.", 404);
+    throw new appErrors("User not found.", 404);
   }
 
   workspace.members.push({
