@@ -4,10 +4,9 @@ import {
   getWorkSpaceByIdService,
   updateWOrkSpaceService,
   deleteWorkSpaceService,
-  inviteMemberTOWorkSpace,
-  acceptInvitationService,
   findMemberAndUpdateRoleService,
   getWorkspaceMembersService,
+  addMemberDirectly,
 } from "./workspace.service.js";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
 export const createWorkSpaceController = asyncWrapper(
@@ -67,29 +66,6 @@ export const deleteWorkSpaceController = asyncWrapper(
   },
 );
 
-export const inviteMemberCOntroller = asyncWrapper(
-  async function (req, res, next) {
-    const { email } = req.body;
-    const workspaceId = req.params.id;
-    const data = await inviteMemberTOWorkSpace(workspaceId, email, req.user.id);
-    res.status(200).json({
-      status: "success",
-      data,
-    });
-  },
-);
-
-export const acceptInvitationController = asyncWrapper(
-  async function (req, res, next) {
-    const { inviteId } = req.params;
-    const data = await acceptInvitationService(inviteId, req.user.id);
-    res.status(200).json({
-      status: "success",
-      data,
-    });
-  },
-);
-
 export const getWorkspaceMembersController = asyncWrapper(async (req, res) => {
   const { workspaceId } = req.params;
   const userId = req.user.id;
@@ -101,4 +77,15 @@ export const getWorkspaceMembersController = asyncWrapper(async (req, res) => {
     results: members.length,
     data: members,
   });
+});
+
+export const addMemberDirectlyHandler = asyncWrapper(async (req, res) => {
+  const data = await addMemberDirectly({
+    workspaceId: req.params.id,
+    targetUserId: req.body.user,
+    role: req.body.role,
+    requestingUserId: req.user.id,
+  });
+
+  res.status(200).json({ status: "success", data });
 });

@@ -1,5 +1,4 @@
 import { workspaceModel } from "./workspace.modle.js";
-import invitationModel from "../invitation/invitation.modle.js";
 export const createWorkSpace = async function (data) {
   return workspaceModel.create(data);
 };
@@ -35,40 +34,11 @@ export const findWorkspaceMembersRepo = async (workspaceId) => {
 };
 // ********************* invetation code *****************8
 
-export const createInvitationRepo = async function (
-  workspaceId,
-  invitedUserId,
-  ownerId,
-) {
-  return invitationModel.create({
-    workspace: workspaceId,
-    invitedBy: ownerId,
-    invitedUser: invitedUserId,
-  });
-};
-
-export const findPendingInvitationByIdRepo = async function (inviteId) {
-  return invitationModel.findOne({ _id: inviteId, status: "pending" });
-};
-
 export const updateInvitationStatusRepo = async function (inviteId, status) {
   return invitationModel.findByIdAndUpdate(
     inviteId,
     { status },
     { returnDocument: "after" },
-  );
-};
-
-export const inviteMemberToWOrkSpaceRepo = async function (
-  workspaceId,
-  userId,
-) {
-  return workspaceModel.findOneAndUpdate(
-    { _id: workspaceId, isDeleted: false, "members.user": { $ne: userId } }, //! "members.user": { $ne: userId } // to prevent adding the same user multiple times
-    {
-      $push: { members: { user: userId, role: "member" } },
-    },
-    { returnDocument: "after", runValidators: true },
   );
 };
 

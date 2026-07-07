@@ -5,15 +5,13 @@ import {
   getWorkSpaceByIdController,
   updateWorkSpaceController,
   deleteWorkSpaceController,
-  inviteMemberCOntroller,
-  acceptInvitationController,
   getWorkspaceMembersController,
+  addMemberDirectlyHandler,
 } from "./workspace.controller.js";
 import { protect } from "../../shared/middlewares/protect.middleWare.js";
 import { validateRequest } from "../../shared/middlewares/validation.middleware.js";
 import {
   createWorkspaceSchema,
-  inviteMemberSchema,
   updateWorkspaceSchema,
 } from "./workspace.valedator.js";
 const workSpaceRouter = Router();
@@ -38,18 +36,7 @@ workSpaceRouter.patch(
 
 workSpaceRouter.delete("/:id", protect, deleteWorkSpaceController);
 
-workSpaceRouter.get(
-  "/invitations/:inviteId",
-  protect,
-  acceptInvitationController,
-);
-
-workSpaceRouter.post(
-  "/:id/invitations",
-  protect,
-  validateRequest(inviteMemberSchema),
-  inviteMemberCOntroller,
-);
+workSpaceRouter.post("/:id/members", protect, addMemberDirectlyHandler);
 
 workSpaceRouter.get(
   "/:workspaceId/members",

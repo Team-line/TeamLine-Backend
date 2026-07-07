@@ -5,6 +5,7 @@ import {
   getUserProfile,
   resetUserPassword,
   updateUserDate,
+  searchUserByEmail,
 } from "./user.service.js";
 export const getProfile = asyncWrapper(async function (req, res, next) {
   let data = await getUserProfile(req.user.id);
@@ -62,3 +63,12 @@ export const updateUserDateController = asyncWrapper(
     });
   },
 );
+
+export const searchUserByEmailHandler = asyncWrapper(async (req, res) => {
+  const user = await searchUserByEmail({
+    email: req.query.email,
+    requestingUserId: req.user.id,
+  });
+
+  res.status(200).json({ status: "success", data: user });
+});
