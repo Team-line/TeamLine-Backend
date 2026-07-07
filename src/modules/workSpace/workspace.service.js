@@ -167,15 +167,15 @@ export const addMemberDirectly = async ({
     .select("owner members name isDeleted");
 
   if (!workspace || workspace.isDeleted) {
-    throw new AppError("Workspace not found.", 404);
+    throw new appErrors("Workspace not found.", 404);
   }
 
   if (workspace.owner.toString() !== requestingUserId.toString()) {
-    throw new AppError("Only the workspace owner can add members.", 403);
+    throw new appErrors("Only the workspace owner can add members.", 403);
   }
 
   if (workspace.members.length >= 50) {
-    throw new AppError("Workspace has reached the limit of 50 members.", 400);
+    throw new appErrors("Workspace has reached the limit of 50 members.", 400);
   }
 
   const alreadyMember = workspace.members.some(
