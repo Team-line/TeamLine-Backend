@@ -87,3 +87,7 @@ export const getDashboardStats = async ({ workspaceId, userId }) => {
     dailyProductivity,
   };
 };
+
+export const getAllWorkspacesWithProjects = async ({ userId }) => {
+  return repo.getAllWorkspacesWithProjects(userId);
+};

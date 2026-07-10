@@ -519,4 +519,80 @@ export class DashboardRepository {
       }),
     );
   }
+  async getAllWorkspacesWithProjects(userId) {
+    const workspaces = await workspaceModel
+      .find({
+        "members.user": new mongoose.Types.ObjectId(userId),
+        isDeleted: { $ne: true },
+      })
+      .select("_id name members owner")
+      .lean();
+
+    const result = await Promise.all(
+      workspaces.map(async (workspace) => {
+        const boards = await boardModel
+          .find({
+            workspace: workspace._id,
+            isDeleted: { $ne: true },
+            isArchived: { $ne: true },
+          })
+          .select("_id name createdAt")
+          .sort({ createdAt: -1 })
+          .lean();
+
+        const boardsWithStats = await Promise.all(
+          boards.map(async (board) => {
+            const taskStats = await TaskModle.aggregate([
+              {
+                $match: {
+                  board: board._id,
+                  isDeleted: { $ne: true },
+                },
+              },
+              {
+                $group: {
+                  _id: null,
+                  total: { $sum: 1 },
+                  completed: {
+                    $sum: { $cond: ["$isCompleted", 1, 0] },
+                  },
+                },
+              },
+            ]);
+
+            const stats = taskStats[0] || { total: 0, completed: 0 };
+            const progress =
+              stats.total > 0
+                ? Math.round((stats.completed / stats.total) * 100)
+                : 0;
+
+            return {
+              _id: board._id,
+              name: board.name,
+              progress,
+              totalTasks: stats.total,
+              completedTasks: stats.completed,
+            };
+          }),
+        );
+
+        const userRole =
+          workspace.members.find((m) => {
+            const memberId = m.user ? m.user.toString() : m.toString();
+            return memberId === userId.toString();
+          })?.role || "member";
+
+        return {
+          _id: workspace._id,
+          name: workspace.name,
+          role: userRole,
+          totalBoards: boards.length,
+          boards: boardsWithStats,
+        };
+      }),
+    );
+
+    return result;
+    // test
+  }
 }
