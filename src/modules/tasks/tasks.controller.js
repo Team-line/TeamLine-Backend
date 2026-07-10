@@ -6,6 +6,7 @@ import {
   deleteTaskService,
   assignTaskService,
   getAllTasksService,
+  toggleCompleteTaskService,
 } from "./tasks.service.js";
 import { asyncWrapper } from "../../shared/utils/asyncWrapper.js";
 export const createTaskController = asyncWrapper(async (req, res) => {
@@ -108,5 +109,17 @@ export const getAllTasksController = asyncWrapper(async (req, res) => {
   res.status(200).json({
     status: "success",
     data: tasks,
+  });
+});
+
+export const toggleCompleteTaskController = asyncWrapper(async (req, res) => {
+  const { taskId } = req.params;
+  const userId = req.user.id;
+
+  const task = await toggleCompleteTaskService({ taskId, userId });
+
+  res.status(200).json({
+    status: "success",
+    data: task,
   });
 });

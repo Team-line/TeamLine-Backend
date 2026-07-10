@@ -192,8 +192,10 @@ export const moveTaskPositionService = async function ({
         {
           board: task.board,
           column: oldColumnId,
-          order: { $gte: newOrder, $lt: oldOrder }, //
-          isDeleted: false,
+          order: { $gte: newOrder, $lt: oldOrder },
+          // BUG FIX (BUG 3): changed isDeleted: false to $ne: true so tasks
+          // where the field is undefined are not skipped during reorder.
+          isDeleted: { $ne: true },
         },
         { $inc: { order: 1 } },
       );
@@ -204,7 +206,8 @@ export const moveTaskPositionService = async function ({
           board: task.board,
           column: oldColumnId,
           order: { $gt: oldOrder, $lte: newOrder },
-          isDeleted: false,
+          // BUG FIX (BUG 3): same $ne: true fix.
+          isDeleted: { $ne: true },
         },
         { $inc: { order: -1 } },
       );
@@ -217,7 +220,8 @@ export const moveTaskPositionService = async function ({
         board: task.board,
         column: oldColumnId,
         order: { $gt: oldOrder },
-        isDeleted: false,
+        // BUG FIX (BUG 3): changed isDeleted: false to $ne: true.
+        isDeleted: { $ne: true },
       },
       { $inc: { order: -1 } },
     );
@@ -227,7 +231,7 @@ export const moveTaskPositionService = async function ({
         board: task.board,
         column: columnId,
         order: { $gte: newOrder },
-        isDeleted: false,
+        isDeleted: { $ne: true },
       },
       { $inc: { order: 1 } },
     );
@@ -294,7 +298,8 @@ export const deleteTaskService = async function ({ userId, taskId }) {
       board: task.board,
       column: columnId,
       order: { $gt: deletedOrder },
-      isDeleted: false,
+      // BUG FIX (BUG 3): changed isDeleted: false to $ne: true.
+      isDeleted: { $ne: true },
     },
     { $inc: { order: -1 } },
   );
@@ -327,9 +332,8 @@ export const assignTaskService = async function ({
   // 3) check if the user is a member of the workspace
   const workspace = await checkUserWorkspaceMembership(userId, task.workspace);
 
+  // BUG FIX (BUG 4): removed debug console.log statements left in production code.
   // 4) check if the assigneesId is an array and has at most 5 members
-  console.log(assigneesId);
-  console.log(assigneesId.length);
 
   if (!Array.isArray(assigneesId) || assigneesId.length > 5) {
     throw new appError(
@@ -406,4 +410,25 @@ export const getAllTasksService = async function ({
   const tasks = await findAllTasksInBoardRepo(boardId);
 
   return tasks.map(formatTaskResponse);
+};
+
+
+export const toggleCompleteTaskService = async function ({ userId, taskId }) {
+  if (!mongoose.Types.ObjectId.isValid(taskId)) {
+    throw new appError("Invalid Task identity format", 400);
+  }
+
+  const task = await findTaskWithoutPopulate(taskId);
+  if (!task || task.isDeleted) {
+    throw new appError("Task not found", 404);
+  }
+
+  await checkUserWorkspaceMembership(userId, task.workspace);
+
+  task.isCompleted = !task.isCompleted;
+
+
+  await task.save();
+
+  return formatTaskResponse(task);
 };
