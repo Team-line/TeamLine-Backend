@@ -12,6 +12,7 @@ import boardRouter from "./modules/Board/board.route.js";
 import taskRouter from "./modules/tasks/tasks.route.js";
 import timerRouter from "./modules/time-tracking/timeEntry.routes.js";
 import reportRouter from "./modules/reports/report.routes.js";
+import dashboardRouter from "./modules/dashboard/dashboard.routes.js";
 
 import appErrors from "./shared/errors/appErrors.js";
 
@@ -72,6 +73,7 @@ app.use(
 );
 app.use("/api/v1/timers", timerRouter);
 app.use("/api/v1/reports", reportRouter);
+app.use("/api/v1/dashboard", dashboardRouter);
 app.use((req, res, next) => {
   next(new appErrors(`Can't find ${req.originalUrl} on this server!`, 404));
 });

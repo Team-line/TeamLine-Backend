@@ -5,18 +5,18 @@ export const createTask = async (taskData) => {
 };
 
 export const findTaskRepo = async (taskId) => {
-  return TaskModle.findOne({ _id: taskId, isDeleted: false }).populate(
+  return TaskModle.findOne({ _id: taskId, isDeleted: { $ne: true } }).populate(
     "assignees",
     "name email",
   );
 };
 
 export const findTaskWithoutPopulate = async function (taskId) {
-  return TaskModle.findOne({ _id: taskId, isDeleted: false });
+  return TaskModle.findOne({ _id: taskId, isDeleted: { $ne: true } });
 };
 
 export const findAllTasksInBoardRepo = async (boardId) => {
-  return TaskModle.find({ board: boardId, isDeleted: false })
+  return TaskModle.find({ board: boardId, isDeleted: { $ne: true } })
     .populate("assignees", "name email")
     .sort({ order: 1 });
 };

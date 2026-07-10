@@ -7,6 +7,7 @@ import {
   deleteTaskController,
   assignTaskController,
   getAllTasksController,
+  toggleCompleteTaskController,
 } from "./tasks.controller.js";
 import { protect } from "../../shared/middlewares/protect.middleWare.js";
 const router = Router({ mergeParams: true });
@@ -19,5 +20,7 @@ router.patch("/:taskId/move", protect, moveTaskPositionController);
 router.delete("/:taskId", protect, deleteTaskController);
 
 router.patch("/:taskId/assign", protect, assignTaskController);
+
+router.patch("/:taskId/complete", protect, toggleCompleteTaskController);
 
 export default router;
