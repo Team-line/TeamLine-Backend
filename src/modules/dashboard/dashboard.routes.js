@@ -7,6 +7,7 @@ import {
   getTaskDistributionHandler,
   getDailyProductivityHandler,
   getProjectDetailsHandler,
+  getAllWorkspacesWithProjectsHandler,
 } from "./dashboard.controller.js";
 
 const dashboardRouter = Router();
@@ -40,4 +41,9 @@ dashboardRouter.get(
   getProjectDetailsHandler,
 );
 
+dashboardRouter.get(
+  "/all-workspaces",
+  protect,
+  getAllWorkspacesWithProjectsHandler,
+);
 export default dashboardRouter;

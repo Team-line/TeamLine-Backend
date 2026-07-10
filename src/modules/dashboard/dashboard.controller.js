@@ -6,6 +6,7 @@ import {
   getTaskDistribution,
   getDailyProductivity,
   getProjectDetails,
+  getAllWorkspacesWithProjects,
 } from "./dashboard.service.js";
 
 export const getDashboardStatsHandler = asyncWrapper(async (req, res) => {
@@ -58,3 +59,12 @@ export const getProjectDetailsHandler = asyncWrapper(async (req, res) => {
   });
   res.status(200).json({ status: "success", data });
 });
+export const getAllWorkspacesWithProjectsHandler = asyncWrapper(
+  async (req, res) => {
+    const data = await getAllWorkspacesWithProjects({
+      userId: req.user.id,
+    });
+
+    res.status(200).json({ status: "success", data });
+  },
+);
