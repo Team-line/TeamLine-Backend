@@ -6,11 +6,11 @@ import { timeEntryModel } from "../time-tracking/timeEntry.model.js";
 
 export class DashboardRepository {
   async getTaskStats(workspaceId) {
+    // the returned val of the result is an array with a single object containing the aggregated stats
     const result = await TaskModle.aggregate([
       {
         $match: {
           workspace: new mongoose.Types.ObjectId(workspaceId),
-
           isDeleted: { $ne: true },
         },
       },
@@ -19,6 +19,7 @@ export class DashboardRepository {
           _id: null,
           total: { $sum: 1 },
           completed: { $sum: { $cond: ["$isCompleted", 1, 0] } },
+          //! its means the calc the tasks thats not completed and end after its dudate
           overdue: {
             $sum: {
               $cond: [
@@ -48,16 +49,15 @@ export class DashboardRepository {
     return boardModel.countDocuments({
       workspace: new mongoose.Types.ObjectId(workspaceId),
       isDeleted: { $ne: true },
-      isArchived: { $ne: true },
     });
   }
 
   async getActiveProjects(workspaceId) {
+    // get active boards in the workspace and their task stats
     const boards = await boardModel
       .find({
         workspace: new mongoose.Types.ObjectId(workspaceId),
         isDeleted: { $ne: true },
-        isArchived: { $ne: true },
       })
       .select("_id name createdAt")
       .sort({ createdAt: -1 })
@@ -263,7 +263,6 @@ export class DashboardRepository {
       boardModel.countDocuments({
         workspace: new mongoose.Types.ObjectId(workspaceId),
         isDeleted: { $ne: true },
-        isArchived: { $ne: true },
       }),
 
       workspaceModel
@@ -440,7 +439,6 @@ export class DashboardRepository {
       .find({
         workspace: new mongoose.Types.ObjectId(workspaceId),
         isDeleted: { $ne: true },
-        isArchived: { $ne: true },
       })
       .populate("createdBy", "name email avatar")
       .sort({ createdAt: -1 })
@@ -534,7 +532,6 @@ export class DashboardRepository {
           .find({
             workspace: workspace._id,
             isDeleted: { $ne: true },
-            isArchived: { $ne: true },
           })
           .select("_id name createdAt")
           .sort({ createdAt: -1 })
