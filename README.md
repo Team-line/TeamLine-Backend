@@ -1,4 +1,4 @@
-# 📌 Project Management Tool (Backend API)
+# 📌 TeamLine Backend API
 
 A scalable and modular backend system for a Trello-like project management platform designed for small teams and Arabic-speaking users.
 
@@ -42,12 +42,12 @@ src/
 ├── modules/
 │   ├── auth/
 │   ├── users/
-│   ├── workspaces/
-│   ├── boards/
-│   ├── columns/
+│   ├── workSpace/
+│   ├── Board/        (boards and columns)
 │   ├── tasks/
 │   ├── time-tracking/
-│   └── reports/
+│   ├── reports/
+│   └── dashboard/
 │
 ├── shared/
 ├── config/
@@ -68,8 +68,8 @@ Each module contains:
 # ⚙️ Installation
 
 ```bash
-git clone https://github.com/your-username/project-management-backend.git
-cd project-management-backend
+git clone https://github.com/Team-line/TeamLine-Backend.git
+cd TeamLine-Backend
 npm install
 ```
 
@@ -81,9 +81,15 @@ Create a `.env` file:
 
 ```env
 PORT=3000
-MONGO_URI=your_mongodb_connection_string
+NODE_ENV=development
+DB_CONNECTION=your_mongodb_connection_string
 JWT_SECRET=your_secret_key
-JWT_EXPIRES_IN=7d
+REFRESH_TOKEN_SECRET=your_refresh_secret_key
+JWT_EXPIRE=7d
+EMAIL_USER=your_email_address
+EMAIL_PASSWORD=your_email_password
+EMAIL_FROM=your_sender_address
+RESEND_API_KEY=your_resend_api_key
 ```
 
 ---
@@ -139,10 +145,15 @@ Authorization: Bearer <token>
 - Assign user
 - Move between columns
 
+## Workspaces
+
+- Create, view, update and delete workspaces
+- Add members to a workspace
+
 ## Boards
 
-- Create board
-- Manage structure
+- Create, view, update and delete boards
+- Add, list, update and delete columns
 
 ## Time Tracking
 
@@ -154,6 +165,12 @@ Authorization: Bearer <token>
 
 - Weekly aggregation
 - Export-ready data
+
+## Dashboard
+
+- Workspace stats and active projects
+- Report stats, task distribution and daily productivity
+- Project details
 
 ---
 
@@ -169,7 +186,7 @@ Authorization: Bearer <token>
 
 # 🚧 Project Status
 
-🚀 MVP Phase (Backend Foundation in progress)
+Backend MVP. Authentication, workspaces, boards, columns, tasks, time tracking, reports and a dashboard are in place. Last updated in July 2026.
 
 ---
 
@@ -185,10 +202,6 @@ Authorization: Bearer <token>
 
 # 👨‍💻 Author
 
-Built as part of a scalable full-stack project management system.
+Built by the Team-line team during the 144-hour TAQAT intensive training at Code Map.
 
----
-
-# 📄 License
-
-This project is currently private / under development.
+Backend developer and team lead: [Mohammed Ferwana](https://github.com/hammoudFerwana).
