@@ -6,6 +6,8 @@ It provides core features such as task management, Kanban boards, time tracking,
 
 Built with **Node.js, Express.js, and MongoDB**, following a feature-based modular architecture for scalability and maintainability.
 
+The web client is a separate **Next.js** app: [Team-line/TeamLine-frontend](https://github.com/Team-line/TeamLine-frontend). It has pages for sign in and registration, a dashboard, workspaces and projects, boards with drag and drop, tasks, time logs, reports and settings.
+
 ---
 
 # 🚀 Features (MVP)
