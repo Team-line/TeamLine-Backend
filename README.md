@@ -1,85 +1,95 @@
-# 📌 TeamLine Backend API
+# TeamLine Backend
 
-A scalable and modular backend system for a Trello-like project management platform designed for small teams and Arabic-speaking users.
+**REST API for a Kanban-style team workspace: boards, tasks, time tracking and reports.**
+Built in the 144-hour TAQAT intensive training at Code Map.
 
-It provides core features such as task management, Kanban boards, time tracking, and weekly reporting.
+![Node.js](https://img.shields.io/badge/Node.js-339933?logo=nodedotjs&logoColor=white)
+![Express 5](https://img.shields.io/badge/Express_5-000000?logo=express&logoColor=white)
+![MongoDB](https://img.shields.io/badge/MongoDB-47A248?logo=mongodb&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-000000?logo=jsonwebtokens&logoColor=white)
 
-Built with **Node.js, Express.js, and MongoDB**, following a feature-based modular architecture for scalability and maintainability.
-
-The web client is a separate **Next.js** app: [Team-line/TeamLine-frontend](https://github.com/Team-line/TeamLine-frontend). It has pages for sign in and registration, a dashboard, workspaces and projects, boards with drag and drop, tasks, time logs, reports and settings.
-
----
-
-# 🚀 Features (MVP)
-
-- 🔐 Authentication (JWT-based)
-- 👥 Workspace management
-- 📋 Kanban boards system
-- 🧩 Custom columns per board
-- ✅ Task creation & assignment
-- 🔄 Drag & drop task movement (API support)
-- ⏱️ Time tracking per task
-- 📊 Weekly reports generation (export-ready structure)
+[Live app](https://team-line-frontend-eight.vercel.app/) · [Frontend repo](https://github.com/Team-line/TeamLine-frontend)
 
 ---
 
-# 🏗️ Tech Stack
+## The problem
 
-- Node.js
-- Express.js
-- MongoDB + Mongoose
-- JWT Authentication
-- bcrypt (password hashing)
-- dotenv
-- cors + helmet (security)
+Small teams track tasks across scattered tools, so ownership and status get lost.
 
----
+TeamLine gives each team one workspace where tasks live on boards, every task has an owner, and the time spent on each task is recorded. Built for small teams and Arabic-speaking users.
 
-# 📁 Project Architecture
+## What the system does
 
-The project follows a **feature-based modular architecture**:
+- **Workspaces:** a team creates a workspace and adds members by email.
+- **Boards and columns:** each workspace holds boards with custom columns (for example To Do, Doing, Done).
+- **Tasks:** create, assign, move between columns and mark complete.
+- **Time tracking:** start and stop a timer on a task, or add time by hand.
+- **Reports:** a summary for any date range, exported as CSV or PDF.
+- **Dashboard:** workspace stats, task distribution and daily productivity.
+- **Accounts:** sign up, sign in, password reset by email.
+
+## How the data fits together
+
+```mermaid
+erDiagram
+    USER ||--o{ WORKSPACE : "owns or joins"
+    WORKSPACE ||--o{ BOARD : contains
+    BOARD ||--o{ COLUMN : has
+    COLUMN ||--o{ TASK : holds
+    USER ||--o{ TASK : "assigned to"
+    TASK ||--o{ TIME_ENTRY : logs
+```
+
+## Engineering highlights
+
+- **Two-token auth.** A 1-hour access token plus a 90-day refresh token, both in `httpOnly` cookies. A `Bearer` header also works.
+- **Workspace roles.** Each member is `owner` or `member`. Only owners update or delete a workspace.
+- **Fail-fast config.** Joi validates every environment variable at startup. A missing value stops the server with a clear message.
+- **Layered modules.** Each feature has its own route, controller, service, repository and model files.
+- **Security basics.** Helmet, CORS, and a rate limit of 20 requests per 15 minutes on auth routes.
+- **Transactional email.** Password reset links sent through Resend.
+
+**Size:** 8 modules, 52 endpoints under `/api/v1`.
+
+## Tech stack
+
+| Area | Tools |
+|------|-------|
+| Runtime and API | Node.js, Express 5 (ES modules) |
+| Database | MongoDB, Mongoose 9 |
+| Validation and auth | Joi, JWT, bcryptjs |
+| Email | Resend |
+| Reports | pdfkit (PDF), CSV export |
+
+## Project structure
 
 ```text
 src/
 ├── modules/
-│   ├── auth/
-│   ├── users/
-│   ├── workSpace/
-│   ├── Board/        (boards and columns)
-│   ├── tasks/
-│   ├── time-tracking/
-│   ├── reports/
-│   └── dashboard/
-│
-├── shared/
-├── config/
+│   ├── auth/            # sign up, sign in, refresh, logout
+│   ├── users/           # profile, password reset, search
+│   ├── workSpace/       # workspaces and members
+│   ├── Board/           # boards and columns
+│   ├── tasks/           # tasks, moves, assignment
+│   ├── time-tracking/   # timers and time entries
+│   ├── reports/         # summaries, CSV and PDF export
+│   └── dashboard/       # stats and charts data
+├── shared/              # middlewares, errors, email templates
+├── config/              # env validation, database, email client
 ├── app.js
 └── server.js
 ```
 
-Each module contains:
-
-- controller
-- service
-- routes
-- model
-- validation (where needed)
-
----
-
-# ⚙️ Installation
+## Run locally
 
 ```bash
 git clone https://github.com/Team-line/TeamLine-Backend.git
 cd TeamLine-Backend
 npm install
+npm run dev
 ```
 
----
-
-# 🔧 Environment Variables
-
-Create a `.env` file:
+Create a `.env` file first:
 
 ```env
 PORT=3000
@@ -94,116 +104,9 @@ EMAIL_FROM=your_sender_address
 RESEND_API_KEY=your_resend_api_key
 ```
 
----
+## Team
 
-# ▶️ Run the Project
+Built by a team of five: 1 backend developer, 3 frontend developers and 1 UI/UX designer.
 
-### Development mode:
-
-```bash
-npm run dev
-```
-
-### Production:
-
-```bash
-npm start
-```
-
----
-
-# 📡 API Base URL
-
-```
-/api/v1
-```
-
----
-
-# 🔐 Authentication Flow
-
-1. User registers or logs in
-2. Server generates JWT token
-3. Token is sent in request header:
-
-```http
-Authorization: Bearer <token>
-```
-
----
-
-# 📊 Core Modules
-
-## Auth
-
-- Register
-- Login
-- JWT validation
-
-## Tasks
-
-- Create task
-- Update task
-- Assign user
-- Move between columns
-
-## Workspaces
-
-- Create, view, update and delete workspaces
-- Add members to a workspace
-
-## Boards
-
-- Create, view, update and delete boards
-- Add, list, update and delete columns
-
-## Time Tracking
-
-- Start timer
-- Stop timer
-- Log work hours
-
-## Reports
-
-- Weekly aggregation
-- Export-ready data
-
-## Dashboard
-
-- Workspace stats and active projects
-- Report stats, task distribution and daily productivity
-- Project details
-
----
-
-# 🧠 Design Principles
-
-- Modular architecture (feature-based)
-- Separation of concerns
-- Scalable backend structure
-- Stateless API design
-- Clean error handling system
-
----
-
-# 🚧 Project Status
-
-Backend MVP. Authentication, workspaces, boards, columns, tasks, time tracking, reports and a dashboard are in place. Last updated in July 2026.
-
----
-
-# 📌 Future Improvements
-
-- Real-time collaboration (WebSockets)
-- Notifications system
-- Mobile application
-- AI task suggestions
-- Advanced analytics dashboard
-
----
-
-# 👨‍💻 Author
-
-Built by the Team-line team during the 144-hour TAQAT intensive training at Code Map.
-
-Backend developer and team lead: [Mohammed Ferwana](https://github.com/hammoudFerwana).
+**Backend and team lead:** [Mohammed Ferwana](https://github.com/hammoudFerwana)
+[LinkedIn](https://www.linkedin.com/in/mohammed-ferwana) · mohammedferwana2@gmail.com
